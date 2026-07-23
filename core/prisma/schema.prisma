@@ -3,18 +3,18 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
-  id             String          @id @default(uuid())
-  email          String          @unique
-  emailVerified  Boolean         @default(false)
+  id             String          @id @default(uuid()) @db.Uuid
+  email          String          @map("email")
+  emailVerified  Boolean         @default(false) @map("email_verified")
   phone          String?
-  passwordHash   String
-  fullName       String?
-  createdAt      DateTime        @default(now())
+  passwordHash   String          @map("password_hash")
+  fullName       String?         @map("full_name")
+  createdAt      DateTime        @default(now()) @db.Timestamptz() @map("created_at")
   authTokens     AuthToken[]
   memberships    Membership[]
   ownedOrgs      Organization[]  @relation("OrgOwner")
@@ -26,323 +26,351 @@ model Account {
   appointments   Appointment[]   @relation("StaffAppointments")
   medicalRecords MedicalRecord[] @relation("CreatedBy")
   auditLogs      AuditLog[]
+
+  @@map("accounts")
 }
 
 model AuthToken {
-  id        String    @id @default(uuid())
-  accountId String
-  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  tokenHash String
-  purpose   String
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+  id          String    @id @default(uuid()) @db.Uuid
+  accountId   String    @map("account_id") @db.Uuid
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tokenHash   String    @map("token_hash")
+  tokenPrefix String    @map("token_prefix")
+  purpose     String
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz()
+  usedAt      DateTime? @map("used_at") @db.Timestamptz()
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
 
   @@index([accountId])
+  @@index([tokenPrefix])
+  @@map("auth_tokens")
 }
 
 model Organization {
-  id               String          @id @default(uuid())
-  name             String
-  businessType     String
-  subdomain        String?         @unique
-  status           String          @default("active")
-  ownerAccountId   String
-  owner            Account         @relation("OrgOwner", fields: [ownerAccountId], references: [id])
-  defaultCurrency  String          @default("TND")
-  timezone         String          @default("Africa/Tunis")
-  locale           String          @default("fr")
-  hardwarePackage  String?
-  updatedAt        DateTime        @default(now())
-  createdAt        DateTime        @default(now())
-  memberships      Membership[]
-  customers        Customer[]
-  locations        Location[]
-  products         ProductService[]
-  staffShifts      StaffShift[]
-  orders           Order[]
-  orderItems       OrderItem[]
-  payments         Payment[]
-  appointments     Appointment[]
-  inventoryStock   InventoryStock[]
-  gymMemberships   GymMembership[]
-  medicalRecords   MedicalRecord[]
-  orgFeatures      OrgFeature[]
-  events           Event[]
-  auditLogs        AuditLog[]
+  id              String          @id @default(uuid()) @db.Uuid
+  name            String
+  businessType    String          @map("business_type")
+  subdomain       String?         @unique
+  status          String          @default("active")
+  ownerAccountId  String          @map("owner_account_id") @db.Uuid
+  owner           Account         @relation("OrgOwner", fields: [ownerAccountId], references: [id])
+  defaultCurrency String          @default("TND") @map("default_currency")
+  timezone        String          @default("Africa/Tunis")
+  locale          String          @default("fr")
+  hardwarePackage String?         @map("hardware_package")
+  updatedAt       DateTime        @updatedAt @db.Timestamptz() @map("updated_at")
+  createdAt       DateTime        @default(now()) @db.Timestamptz() @map("created_at")
+  memberships     Membership[]
+  customers       Customer[]
+  locations       Location[]
+  products        ProductService[]
+  staffShifts     StaffShift[]
+  orders          Order[]
+  orderItems      OrderItem[]
+  payments        Payment[]
+  appointments    Appointment[]
+  inventoryStock  InventoryStock[]
+  gymMemberships  GymMembership[]
+  medicalRecords  MedicalRecord[]
+  orgFeatures     OrgFeature[]
+  events          Event[]
+  auditLogs       AuditLog[]
+
+  @@map("organizations")
 }
 
 model Membership {
-  id        String    @id @default(uuid())
-  accountId String
+  id        String    @id @default(uuid()) @db.Uuid
+  accountId String    @map("account_id") @db.Uuid
   account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  orgId     String
+  orgId     String    @map("org_id") @db.Uuid
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   role      String
-  createdAt DateTime  @default(now())
+  createdAt DateTime  @default(now()) @db.Timestamptz() @map("created_at")
 
   @@unique([accountId, orgId])
   @@index([accountId])
   @@index([orgId])
+  @@map("memberships")
 }
 
 model PlatformAdmin {
-  id              String    @id @default(uuid())
-  accountId       String    @unique
+  id              String    @id @default(uuid()) @db.Uuid
+  accountId       String    @unique @map("account_id") @db.Uuid
   account         Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  permissionLevel String
-  createdAt       DateTime  @default(now())
+  permissionLevel String    @map("permission_level")
+  createdAt       DateTime  @default(now()) @db.Timestamptz() @map("created_at")
+
+  @@map("platform_admins")
 }
 
 model Plan {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   name          String
-  priceMillimes Int
+  priceMillimes Int            @map("price_millimes")
   currency      String         @default("TND")
-  maxOrgs       Int?
-  features      String         @default("{}")
+  maxOrgs       Int?           @map("max_orgs")
+  features      Json           @default("{}")
   subscriptions Subscription[]
+
+  @@map("plans")
 }
 
 model Subscription {
-  id               String                @id @default(uuid())
-  accountId        String
+  id               String                @id @default(uuid()) @db.Uuid
+  accountId        String                @map("account_id") @db.Uuid
   account          Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  planId           String
+  planId           String                @map("plan_id") @db.Uuid
   plan             Plan                  @relation(fields: [planId], references: [id])
   status           String
-  currentPeriodEnd DateTime
-  gracePeriodEnd   DateTime?
-  createdAt        DateTime              @default(now())
+  currentPeriodEnd DateTime              @map("current_period_end") @db.Timestamptz()
+  gracePeriodEnd   DateTime?             @map("grace_period_end") @db.Timestamptz()
+  createdAt        DateTime              @default(now()) @db.Timestamptz() @map("created_at")
   payments         SubscriptionPayment[]
 
   @@index([accountId])
+  @@map("subscriptions")
 }
 
 model SubscriptionPayment {
-  id                String       @id @default(uuid())
-  subscriptionId    String
+  id                String       @id @default(uuid()) @db.Uuid
+  subscriptionId    String       @map("subscription_id") @db.Uuid
   subscription      Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  accountId         String
+  accountId         String       @map("account_id") @db.Uuid
   account           Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  amountMillimes    Int
+  amountMillimes    Int          @map("amount_millimes")
   currency          String       @default("TND")
   provider          String
-  providerReference String?
+  providerReference String?      @map("provider_reference")
   status            String
-  periodStart       DateTime?
-  periodEnd         DateTime?
-  createdAt         DateTime     @default(now())
+  periodStart       DateTime?    @db.Date @map("period_start")
+  periodEnd         DateTime?    @db.Date @map("period_end")
+  createdAt         DateTime     @default(now()) @db.Timestamptz() @map("created_at")
 
   @@index([accountId])
   @@index([subscriptionId])
+  @@map("subscription_payments")
 }
 
 model Customer {
-  id         String   @id @default(uuid())
-  orgId      String
-  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  name       String
-  phone      String?
-  email      String?
-  attributes String   @default("{}")
-  updatedAt  DateTime @default(now())
-  createdAt  DateTime @default(now())
-  orders     Order[]
-  appointments Appointment[]
-  gymMemberships GymMembership[]
+  id              String          @id @default(uuid()) @db.Uuid
+  orgId           String          @map("org_id") @db.Uuid
+  org             Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name            String
+  phone           String?
+  email           String?
+  attributes      Json            @default("{}")
+  updatedAt       DateTime        @updatedAt @db.Timestamptz() @map("updated_at")
+  createdAt       DateTime        @default(now()) @db.Timestamptz() @map("created_at")
+  orders          Order[]
+  appointments    Appointment[]
+  gymMemberships  GymMembership[]
   medicalPatients MedicalRecord[]
 
   @@index([orgId])
+  @@map("customers")
 }
 
 model Location {
-  id         String       @id @default(uuid())
-  orgId      String
-  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  name       String
-  attributes String       @default("{}")
-  orders     Order[]
-  appointments Appointment[]
+  id            String       @id @default(uuid()) @db.Uuid
+  orgId         String       @map("org_id") @db.Uuid
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name          String
+  attributes    Json         @default("{}")
+  orders        Order[]
+  appointments  Appointment[]
 
   @@index([orgId])
+  @@map("locations")
 }
 
 model ProductService {
-  id             String          @id @default(uuid())
-  orgId          String
+  id             String          @id @default(uuid()) @db.Uuid
+  orgId          String          @map("org_id") @db.Uuid
   org            Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
   type           String
   name           String
   barcode        String?
-  priceMillimes  Int
+  priceMillimes  Int             @map("price_millimes")
   currency       String          @default("TND")
-  attributes     String          @default("{}")
+  attributes     Json            @default("{}")
   active         Boolean         @default(true)
-  updatedAt      DateTime        @default(now())
-  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt @db.Timestamptz() @map("updated_at")
+  createdAt      DateTime        @default(now()) @db.Timestamptz() @map("created_at")
   orderItems     OrderItem[]
   inventoryStock InventoryStock[]
 
   @@index([orgId])
+  @@map("products_services")
 }
 
 model StaffShift {
-  id        String       @id @default(uuid())
-  orgId     String
+  id        String       @id @default(uuid()) @db.Uuid
+  orgId     String       @map("org_id") @db.Uuid
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  accountId String
+  accountId String       @map("account_id") @db.Uuid
   account   Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  startTime DateTime
-  endTime   DateTime
+  startTime DateTime     @map("start_time") @db.Timestamptz()
+  endTime   DateTime     @map("end_time") @db.Timestamptz()
 
   @@index([orgId])
+  @@map("staff_shifts")
 }
 
 model Order {
-  id             String       @id @default(uuid())
-  orgId          String
+  id             String       @id @default(uuid()) @db.Uuid
+  orgId          String       @map("org_id") @db.Uuid
   org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  customerId     String?
+  customerId     String?      @map("customer_id") @db.Uuid
   customer       Customer?    @relation(fields: [customerId], references: [id])
-  locationId     String?
+  locationId     String?      @map("location_id") @db.Uuid
   location       Location?    @relation(fields: [locationId], references: [id])
-  staffAccountId String?
+  staffAccountId String?      @map("staff_account_id") @db.Uuid
   staffAccount   Account?     @relation("StaffAccount", fields: [staffAccountId], references: [id])
   status         String       @default("open")
-  totalMillimes  Int          @default(0)
+  totalMillimes  Int          @default(0) @map("total_millimes")
   currency       String       @default("TND")
-  updatedAt      DateTime     @default(now())
-  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt @db.Timestamptz() @map("updated_at")
+  createdAt      DateTime     @default(now()) @db.Timestamptz() @map("created_at")
   items          OrderItem[]
   payments       Payment[]
 
   @@index([orgId])
+  @@map("orders")
 }
 
 model OrderItem {
-  id            String         @id @default(uuid())
-  orgId         String
+  id            String         @id @default(uuid()) @db.Uuid
+  orgId         String         @map("org_id") @db.Uuid
   org           Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  orderId       String
+  orderId       String         @map("order_id") @db.Uuid
   order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId     String
+  productId     String         @map("product_id") @db.Uuid
   product       ProductService @relation(fields: [productId], references: [id])
   qty           Int
-  priceMillimes Int
+  priceMillimes Int            @map("price_millimes")
 
   @@index([orderId])
   @@index([orgId])
+  @@map("order_items")
 }
 
 model Payment {
-  id             String       @id @default(uuid())
-  orgId          String
+  id             String       @id @default(uuid()) @db.Uuid
+  orgId          String       @map("org_id") @db.Uuid
   org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  orderId        String
+  orderId        String       @map("order_id") @db.Uuid
   order          Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  amountMillimes Int
+  amountMillimes Int          @map("amount_millimes")
   method         String
   provider       String?
   status         String
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime     @default(now()) @db.Timestamptz() @map("created_at")
 
   @@index([orgId])
+  @@map("payments")
 }
 
 model Appointment {
-  id             String       @id @default(uuid())
-  orgId          String
+  id             String       @id @default(uuid()) @db.Uuid
+  orgId          String       @map("org_id") @db.Uuid
   org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  customerId     String?
+  customerId     String?      @map("customer_id") @db.Uuid
   customer       Customer?    @relation(fields: [customerId], references: [id])
-  staffAccountId String?
+  staffAccountId String?      @map("staff_account_id") @db.Uuid
   staffAccount   Account?     @relation("StaffAppointments", fields: [staffAccountId], references: [id])
-  locationId     String?
+  locationId     String?      @map("location_id") @db.Uuid
   location       Location?    @relation(fields: [locationId], references: [id])
-  startTime      DateTime
-  endTime        DateTime
+  startTime      DateTime     @map("start_time") @db.Timestamptz()
+  endTime        DateTime     @map("end_time") @db.Timestamptz()
   status         String       @default("booked")
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime     @default(now()) @db.Timestamptz() @map("created_at")
 
   @@index([orgId])
+  @@map("appointments")
 }
 
 model InventoryStock {
-  id           String         @id @default(uuid())
-  orgId        String
+  id           String         @id @default(uuid()) @db.Uuid
+  orgId        String         @map("org_id") @db.Uuid
   org          Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  productId    String
+  productId    String         @map("product_id") @db.Uuid
   product      ProductService @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity     Int            @default(0)
-  reorderLevel Int            @default(0)
-  updatedAt    DateTime       @default(now())
+  reorderLevel Int            @default(0) @map("reorder_level")
+  updatedAt    DateTime       @updatedAt @db.Timestamptz() @map("updated_at")
 
   @@unique([orgId, productId])
   @@index([orgId])
+  @@map("inventory_stock")
 }
 
 model GymMembership {
-  id         String       @id @default(uuid())
-  orgId      String
+  id         String       @id @default(uuid()) @db.Uuid
+  orgId      String       @map("org_id") @db.Uuid
   org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  customerId String
+  customerId String       @map("customer_id") @db.Uuid
   customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  planName   String
-  startDate  DateTime
-  endDate    DateTime
+  planName   String       @map("plan_name")
+  startDate  DateTime     @db.Date @map("start_date")
+  endDate    DateTime     @db.Date @map("end_date")
 
   @@index([orgId])
+  @@map("gym_memberships")
 }
 
 model MedicalRecord {
-  id        String       @id @default(uuid())
-  orgId     String
+  id        String       @id @default(uuid()) @db.Uuid
+  orgId     String       @map("org_id") @db.Uuid
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  patientId String
+  patientId String       @map("patient_id") @db.Uuid
   patient   Customer     @relation(fields: [patientId], references: [id], onDelete: Cascade)
   notes     String?
-  createdBy String?
+  createdBy String?      @map("created_by") @db.Uuid
   creator   Account?     @relation("CreatedBy", fields: [createdBy], references: [id])
-  createdAt DateTime     @default(now())
+  createdAt DateTime     @default(now()) @db.Timestamptz() @map("created_at")
 
   @@index([orgId])
+  @@map("medical_records")
 }
 
 model OrgFeature {
-  orgId      String
+  orgId      String     @map("org_id") @db.Uuid
   org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  featureKey String
-  enabled    Boolean      @default(true)
-  config     String       @default("{}")
+  featureKey String     @map("feature_key")
+  enabled    Boolean    @default(true)
+  config     Json       @default("{}")
 
   @@id([orgId, featureKey])
+  @@map("org_features")
 }
 
 model Event {
-  id          String    @id @default(uuid())
-  orgId       String
+  id          String     @id @default(uuid()) @db.Uuid
+  orgId       String     @map("org_id") @db.Uuid
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   type        String
-  payload     String    @default("{}")
-  createdAt   DateTime  @default(now())
-  processedAt DateTime?
-  attempts    Int       @default(0)
-  lastError   String?
+  payload     Json       @default("{}")
+  createdAt   DateTime   @default(now()) @db.Timestamptz() @map("created_at")
+  processedAt DateTime?  @db.Timestamptz() @map("processed_at")
+  attempts    Int        @default(0)
+  lastError   String?    @map("last_error")
 
   @@index([orgId])
+  @@map("events")
 }
 
 model AuditLog {
-  id        String       @id @default(uuid())
-  orgId     String?
+  id        String       @id @default(uuid()) @db.Uuid
+  orgId     String?      @map("org_id") @db.Uuid
   org       Organization? @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  accountId String?
+  accountId String?      @map("account_id") @db.Uuid
   account   Account?     @relation(fields: [accountId], references: [id])
   action    String
   entity    String
-  entityId  String?
-  createdAt DateTime     @default(now())
+  entityId  String?      @map("entity_id") @db.Uuid
+  createdAt DateTime     @default(now()) @db.Timestamptz() @map("created_at")
 
   @@index([orgId])
+  @@map("audit_log")
 }

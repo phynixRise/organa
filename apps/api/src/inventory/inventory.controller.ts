@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/co
 import { InventoryService } from './inventory.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
+import { SetStockDto, AdjustStockDto } from './dto/inventory.dto';
 
 @Controller('organizations/:orgId/inventory')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -24,17 +25,17 @@ export class InventoryController {
   }
 
   @Post()
-  setStock(@Param('orgId') orgId: string, @Body() body: { productId: string; quantity: number; reorderLevel?: number }) {
-    return this.inventoryService.setStock(orgId, body.productId, body.quantity, body.reorderLevel);
+  setStock(@Param('orgId') orgId: string, @Body() dto: SetStockDto) {
+    return this.inventoryService.setStock(orgId, dto.productId, dto.quantity, dto.reorderLevel);
   }
 
   @Patch(':productId/decrement')
-  decrement(@Param('orgId') orgId: string, @Param('productId') productId: string, @Body('qty') qty: number) {
-    return this.inventoryService.decrementStock(orgId, productId, qty);
+  decrement(@Param('orgId') orgId: string, @Param('productId') productId: string, @Body() dto: AdjustStockDto) {
+    return this.inventoryService.decrementStock(orgId, productId, dto.qty);
   }
 
   @Patch(':productId/increment')
-  increment(@Param('orgId') orgId: string, @Param('productId') productId: string, @Body('qty') qty: number) {
-    return this.inventoryService.incrementStock(orgId, productId, qty);
+  increment(@Param('orgId') orgId: string, @Param('productId') productId: string, @Body() dto: AdjustStockDto) {
+    return this.inventoryService.incrementStock(orgId, productId, dto.qty);
   }
 }

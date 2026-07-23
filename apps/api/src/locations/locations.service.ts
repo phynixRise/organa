@@ -20,7 +20,7 @@ export class LocationsService {
       data: {
         orgId,
         name: data.name,
-        attributes: typeof data.attributes === 'string' ? data.attributes : JSON.stringify(data.attributes || {}),
+        attributes: data.attributes ?? {},
       },
     });
   }
@@ -31,14 +31,14 @@ export class LocationsService {
       where: { id },
       data: {
         ...data,
-        ...(data.attributes !== undefined ? { attributes: typeof data.attributes === 'string' ? data.attributes : JSON.stringify(data.attributes) } : {}),
+        ...(data.attributes !== undefined ? { attributes: data.attributes } : {}),
       },
     });
   }
 
   async delete(orgId: string, id: string) {
     await this.findOne(orgId, id);
-    await this.prisma.location.delete({ where: { id } });
+    await this.prisma.location.delete({ where: { id, orgId } });
     return { message: 'Location deleted' };
   }
 }

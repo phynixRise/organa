@@ -3,6 +3,7 @@ import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { CreateOrderDto } from './dto/order.dto';
 
 @Controller('organizations/:orgId/orders')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -20,10 +21,14 @@ export class OrdersController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Body() body: any, @CurrentUser() user: { sub: string }) {
+  create(
+    @Param('orgId') orgId: string,
+    @Body() dto: CreateOrderDto,
+    @CurrentUser() user: { sub: string },
+  ) {
     return this.ordersService.create(orgId, {
-      ...body,
-      staffAccountId: body.staffAccountId || user.sub,
+      ...dto,
+      staffAccountId: dto.staffAccountId || user.sub,
     });
   }
 

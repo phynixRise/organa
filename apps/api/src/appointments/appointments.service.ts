@@ -48,40 +48,55 @@ export class AppointmentsService {
       throw new BadRequestException('End time must be after start time');
     }
 
-    // Check for staff double-booking (Postgres EXCLUDE constraint handles this too)
-    if (data.staffAccountId) {
-      const conflict = await this.prisma.appointment.findFirst({
-        where: {
+    return this.prisma.$transaction(async (tx) => {
+      if (data.staffAccountId) {
+        const conflict = await tx.appointment.findFirst({
+          where: {
+            orgId,
+            staffAccountId: data.staffAccountId,
+            status: 'booked',
+            startTime: { lt: end },
+            endTime: { gt: start },
+          },
+        });
+
+        if (conflict) {
+          throw new BadRequestException('Staff member already has an appointment at this time');
+        }
+      }
+
+      return tx.appointment.create({
+        data: {
           orgId,
+          customerId: data.customerId,
           staffAccountId: data.staffAccountId,
-          status: 'booked',
-          startTime: { lt: end },
-          endTime: { gt: start },
+          locationId: data.locationId,
+          startTime: start,
+          endTime: end,
         },
       });
-
-      if (conflict) {
-        throw new BadRequestException('Staff member already has an appointment at this time');
-      }
-    }
-
-    return this.prisma.appointment.create({
-      data: {
-        orgId,
-        customerId: data.customerId,
-        staffAccountId: data.staffAccountId,
-        locationId: data.locationId,
-        startTime: start,
-        endTime: end,
-      },
     });
   }
 
-  async update(orgId: string, id: string, data: any) {
+  async update(orgId: string, id: string, data: {
+    customerId?: string;
+    staffAccountId?: string;
+    locationId?: string;
+    startTime?: string;
+    endTime?: string;
+    status?: string;
+  }) {
     await this.findOne(orgId, id);
     return this.prisma.appointment.update({
       where: { id },
-      data,
+      data: {
+        ...(data.customerId !== undefined ? { customerId: data.customerId } : {}),
+        ...(data.staffAccountId !== undefined ? { staffAccountId: data.staffAccountId } : {}),
+        ...(data.locationId !== undefined ? { locationId: data.locationId } : {}),
+        ...(data.startTime !== undefined ? { startTime: new Date(data.startTime) } : {}),
+        ...(data.endTime !== undefined ? { endTime: new Date(data.endTime) } : {}),
+        ...(data.status !== undefined ? { status: data.status } : {}),
+      },
     });
   }
 

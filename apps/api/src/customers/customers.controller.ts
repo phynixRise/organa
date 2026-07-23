@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nes
 import { CustomersService } from './customers.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
+import { CreateCustomerDto, UpdateCustomerDto } from './dto/customer.dto';
 
 @Controller('organizations/:orgId/customers')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -19,13 +20,13 @@ export class CustomersController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Body() body: any) {
-    return this.customersService.create(orgId, body);
+  create(@Param('orgId') orgId: string, @Body() dto: CreateCustomerDto) {
+    return this.customersService.create(orgId, dto);
   }
 
   @Put(':id')
-  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() body: any) {
-    return this.customersService.update(orgId, id, body);
+  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: UpdateCustomerDto) {
+    return this.customersService.update(orgId, id, dto);
   }
 
   @Delete(':id')

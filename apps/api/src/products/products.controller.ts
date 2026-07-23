@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } fro
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @Controller('organizations/:orgId/products')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -24,13 +25,13 @@ export class ProductsController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Body() body: any) {
-    return this.productsService.create(orgId, body);
+  create(@Param('orgId') orgId: string, @Body() dto: CreateProductDto) {
+    return this.productsService.create(orgId, dto);
   }
 
   @Put(':id')
-  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() body: any) {
-    return this.productsService.update(orgId, id, body);
+  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: UpdateProductDto) {
+    return this.productsService.update(orgId, id, dto);
   }
 
   @Delete(':id')

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/co
 import { PaymentsService } from './payments.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
+import { CreatePaymentDto, UpdatePaymentStatusDto } from './dto/payment.dto';
 
 @Controller('organizations/:orgId/payments')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -14,12 +15,16 @@ export class PaymentsController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Body() body: any) {
-    return this.paymentsService.create(orgId, body);
+  create(@Param('orgId') orgId: string, @Body() dto: CreatePaymentDto) {
+    return this.paymentsService.create(orgId, dto);
   }
 
   @Patch(':id/status')
-  updateStatus(@Param('orgId') orgId: string, @Param('id') id: string, @Body('status') status: string) {
-    return this.paymentsService.updateStatus(orgId, id, status);
+  updateStatus(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+    @Body() dto: UpdatePaymentStatusDto,
+  ) {
+    return this.paymentsService.updateStatus(orgId, id, dto.status);
   }
 }

@@ -53,18 +53,29 @@ export class ProductsService {
         type: data.type,
         priceMillimes: data.priceMillimes,
         barcode: data.barcode,
-        attributes: typeof data.attributes === 'string' ? data.attributes : JSON.stringify(data.attributes || {}),
+        attributes: data.attributes ?? {},
       },
     });
   }
 
-  async update(orgId: string, id: string, data: any) {
+  async update(orgId: string, id: string, data: {
+    name?: string;
+    type?: string;
+    priceMillimes?: number;
+    barcode?: string;
+    attributes?: any;
+    active?: boolean;
+  }) {
     await this.findOne(orgId, id);
     return this.prisma.productService.update({
       where: { id },
       data: {
-        ...data,
-        ...(data.attributes !== undefined ? { attributes: typeof data.attributes === 'string' ? data.attributes : JSON.stringify(data.attributes) } : {}),
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.type !== undefined ? { type: data.type } : {}),
+        ...(data.priceMillimes !== undefined ? { priceMillimes: data.priceMillimes } : {}),
+        ...(data.barcode !== undefined ? { barcode: data.barcode } : {}),
+        ...(data.attributes !== undefined ? { attributes: data.attributes } : {}),
+        ...(data.active !== undefined ? { active: data.active } : {}),
       },
     });
   }

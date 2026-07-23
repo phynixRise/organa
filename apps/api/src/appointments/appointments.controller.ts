@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Patch, Param, Body, Query, UseGuards } from
 import { AppointmentsService } from './appointments.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
+import { CreateAppointmentDto, UpdateAppointmentDto } from './dto/appointment.dto';
 
 @Controller('organizations/:orgId/appointments')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -23,13 +24,13 @@ export class AppointmentsController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Body() body: any) {
-    return this.appointmentsService.create(orgId, body);
+  create(@Param('orgId') orgId: string, @Body() dto: CreateAppointmentDto) {
+    return this.appointmentsService.create(orgId, dto);
   }
 
   @Put(':id')
-  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() body: any) {
-    return this.appointmentsService.update(orgId, id, body);
+  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: UpdateAppointmentDto) {
+    return this.appointmentsService.update(orgId, id, dto);
   }
 
   @Patch(':id/cancel')

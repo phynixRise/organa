@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nes
 import { LocationsService } from './locations.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
+import { CreateLocationDto, UpdateLocationDto } from './dto/location.dto';
 
 @Controller('organizations/:orgId/locations')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -19,13 +20,13 @@ export class LocationsController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Body() body: any) {
-    return this.locationsService.create(orgId, body);
+  create(@Param('orgId') orgId: string, @Body() dto: CreateLocationDto) {
+    return this.locationsService.create(orgId, dto);
   }
 
   @Put(':id')
-  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() body: any) {
-    return this.locationsService.update(orgId, id, body);
+  update(@Param('orgId') orgId: string, @Param('id') id: string, @Body() dto: UpdateLocationDto) {
+    return this.locationsService.update(orgId, id, dto);
   }
 
   @Delete(':id')

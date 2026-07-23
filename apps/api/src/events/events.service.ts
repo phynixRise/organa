@@ -31,7 +31,7 @@ export class EventsService {
       data: {
         orgId,
         type,
-        payload: typeof payload === 'string' ? payload : JSON.stringify(payload),
+        payload: payload ?? {},
       },
     });
   }

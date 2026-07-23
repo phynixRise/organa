@@ -31,7 +31,7 @@ export class CustomersService {
         name: data.name,
         phone: data.phone,
         email: data.email,
-        attributes: typeof data.attributes === 'string' ? data.attributes : JSON.stringify(data.attributes || {}),
+        attributes: data.attributes ?? {},
       },
     });
   }
@@ -42,14 +42,14 @@ export class CustomersService {
       where: { id },
       data: {
         ...data,
-        ...(data.attributes !== undefined ? { attributes: typeof data.attributes === 'string' ? data.attributes : JSON.stringify(data.attributes) } : {}),
+        ...(data.attributes !== undefined ? { attributes: data.attributes } : {}),
       },
     });
   }
 
   async delete(orgId: string, id: string) {
     await this.findOne(orgId, id);
-    await this.prisma.customer.delete({ where: { id } });
+    await this.prisma.customer.delete({ where: { id, orgId } });
     return { message: 'Customer deleted' };
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class OrgMembershipGuard implements CanActivate {
     const orgId = request.params.orgId;
 
     if (!orgId) {
-      return true;
+      throw new BadRequestException('Organization ID is required');
     }
 
     const membership = await this.prisma.membership.findUnique({

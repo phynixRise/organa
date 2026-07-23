@@ -17,6 +17,7 @@ export class OrdersService {
         payments: true,
       },
       orderBy: { createdAt: 'desc' },
+      take: 100,
     });
   }
 
@@ -55,6 +56,15 @@ export class OrdersService {
     );
 
     return this.prisma.$transaction(async (tx) => {
+      for (const item of data.items) {
+        const product = await tx.productService.findFirst({
+          where: { id: item.productId, orgId },
+        });
+        if (!product) {
+          throw new BadRequestException(`Product ${item.productId} not found in this organization`);
+        }
+      }
+
       const order = await tx.order.create({
         data: {
           orgId,
@@ -75,14 +85,22 @@ export class OrdersService {
       });
 
       for (const item of data.items) {
-        const stock = await tx.inventoryStock.findFirst({
-          where: { orgId, productId: item.productId },
-        });
+        const stock = await tx.$queryRaw<{ id: string; quantity: number }[]>`
+          SELECT id, quantity FROM inventory_stock
+          WHERE org_id = ${orgId}::uuid AND product_id = ${item.productId}::uuid
+          FOR UPDATE
+        `;
 
-        if (stock && stock.quantity >= item.qty) {
+        if (stock.length > 0) {
+          const s = stock[0];
+          if (s.quantity < item.qty) {
+            throw new BadRequestException(
+              `Insufficient stock for product ${item.productId}. Available: ${s.quantity}, requested: ${item.qty}`,
+            );
+          }
           await tx.inventoryStock.update({
-            where: { id: stock.id },
-            data: { quantity: stock.quantity - item.qty },
+            where: { id: s.id },
+            data: { quantity: s.quantity - item.qty },
           });
         }
       }
@@ -91,7 +109,7 @@ export class OrdersService {
         data: {
           orgId,
           type: 'order.created',
-          payload: JSON.stringify({ orderId: order.id, totalMillimes }),
+          payload: { orderId: order.id, totalMillimes },
         },
       });
 
@@ -129,14 +147,16 @@ export class OrdersService {
       });
 
       for (const item of items) {
-        const stock = await tx.inventoryStock.findFirst({
-          where: { orgId, productId: item.productId },
-        });
+        const stock = await tx.$queryRaw<{ id: string; quantity: number }[]>`
+          SELECT id, quantity FROM inventory_stock
+          WHERE org_id = ${orgId}::uuid AND product_id = ${item.productId}::uuid
+          FOR UPDATE
+        `;
 
-        if (stock) {
+        if (stock.length > 0) {
           await tx.inventoryStock.update({
-            where: { id: stock.id },
-            data: { quantity: stock.quantity + item.qty },
+            where: { id: stock[0].id },
+            data: { quantity: stock[0].quantity + item.qty },
           });
         }
       }

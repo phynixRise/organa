@@ -7,7 +7,6 @@ export class OrganizationsService {
   constructor(private prisma: PrismaService) {}
 
   async create(accountId: string, dto: CreateOrganizationDto) {
-    // Check plan limits
     const subscription = await this.prisma.subscription.findFirst({
       where: { accountId, status: 'active' },
       include: { plan: true },
@@ -15,7 +14,11 @@ export class OrganizationsService {
 
     if (subscription?.plan?.maxOrgs) {
       const orgCount = await this.prisma.membership.count({
-        where: { accountId, role: 'owner' },
+        where: {
+          accountId,
+          role: 'owner',
+          org: { status: 'active' },
+        },
       });
 
       if (orgCount >= subscription.plan.maxOrgs) {
@@ -29,7 +32,7 @@ export class OrganizationsService {
       const organization = await tx.organization.create({
         data: {
           name: dto.name,
-          businessType: dto.businessType as any,
+          businessType: dto.businessType,
           subdomain: dto.subdomain,
           ownerAccountId: accountId,
         },
@@ -101,12 +104,21 @@ export class OrganizationsService {
       throw new ForbiddenException('Only the owner can update this organization');
     }
 
-    const org = await this.prisma.organization.update({
-      where: { id: orgId },
-      data: dto as any,
-    });
+    const org = await this.prisma.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
 
-    return org;
+    return this.prisma.organization.update({
+      where: { id: orgId },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.subdomain !== undefined ? { subdomain: dto.subdomain } : {}),
+        ...(dto.timezone !== undefined ? { timezone: dto.timezone } : {}),
+        ...(dto.locale !== undefined ? { locale: dto.locale } : {}),
+        ...(dto.hardwarePackage !== undefined ? { hardwarePackage: dto.hardwarePackage } : {}),
+      },
+    });
   }
 
   async delete(orgId: string, accountId: string) {
@@ -161,7 +173,7 @@ export class OrganizationsService {
       data: {
         accountId: targetAccount.id,
         orgId,
-        role: dto.role as any,
+        role: dto.role,
       },
     });
 

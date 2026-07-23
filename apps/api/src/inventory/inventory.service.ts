@@ -43,45 +43,48 @@ export class InventoryService {
   }
 
   async decrementStock(orgId: string, productId: string, qty: number) {
-    const stock = await this.prisma.inventoryStock.findUnique({
-      where: { orgId_productId: { orgId, productId } },
-    });
+    const result = await this.prisma.$executeRaw`
+      UPDATE inventory_stock
+      SET quantity = quantity - ${qty}, updated_at = now()
+      WHERE org_id = ${orgId}::uuid AND product_id = ${productId}::uuid AND quantity >= ${qty}
+    `;
 
-    if (!stock) {
-      throw new NotFoundException('Stock record not found');
-    }
-
-    if (stock.quantity < qty) {
+    if (result === 0) {
+      const stock = await this.prisma.inventoryStock.findUnique({
+        where: { orgId_productId: { orgId, productId } },
+      });
+      if (!stock) throw new NotFoundException('Stock record not found');
       throw new BadRequestException(`Insufficient stock. Available: ${stock.quantity}, requested: ${qty}`);
     }
 
-    return this.prisma.inventoryStock.update({
-      where: { id: stock.id },
-      data: { quantity: stock.quantity - qty },
+    return this.prisma.inventoryStock.findUnique({
+      where: { orgId_productId: { orgId, productId } },
     });
   }
 
   async incrementStock(orgId: string, productId: string, qty: number) {
-    const stock = await this.prisma.inventoryStock.findUnique({
-      where: { orgId_productId: { orgId, productId } },
-    });
+    const result = await this.prisma.$executeRaw`
+      UPDATE inventory_stock
+      SET quantity = quantity + ${qty}, updated_at = now()
+      WHERE org_id = ${orgId}::uuid AND product_id = ${productId}::uuid
+    `;
 
-    if (!stock) {
+    if (result === 0) {
       throw new NotFoundException('Stock record not found');
     }
 
-    return this.prisma.inventoryStock.update({
-      where: { id: stock.id },
-      data: { quantity: stock.quantity + qty },
+    return this.prisma.inventoryStock.findUnique({
+      where: { orgId_productId: { orgId, productId } },
     });
   }
 
   async getLowStock(orgId: string) {
-    const allStock = await this.prisma.inventoryStock.findMany({
-      where: { orgId },
-      include: { product: true },
-    });
-
-    return allStock.filter((s) => s.quantity <= s.reorderLevel);
+    return this.prisma.$queryRaw`
+      SELECT s.*, p.name as "productName"
+      FROM inventory_stock s
+      JOIN products_services p ON s.product_id = p.id
+      WHERE s.org_id = ${orgId}::uuid AND s.quantity <= s.reorder_level
+      ORDER BY s.updated_at DESC
+    `;
   }
 }

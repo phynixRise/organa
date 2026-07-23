@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -19,12 +20,13 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async signup(dto: SignupDto) {
     const normalizedEmail = dto.email.toLowerCase().trim();
 
-    const existing = await this.prisma.account.findUnique({
+    const existing = await this.prisma.account.findFirst({
       where: { email: normalizedEmail },
     });
 
@@ -66,7 +68,7 @@ export class AuthService {
             name: 'Free',
             priceMillimes: 0,
             maxOrgs: 3,
-            features: '{}',
+            features: {},
           },
         });
       }
@@ -89,6 +91,31 @@ export class AuthService {
 
     const token = this.generateToken(result.account);
 
+    const verifyToken = randomBytes(32).toString('hex');
+    const verifyTokenPrefix = verifyToken.slice(0, 8);
+    const verifyTokenHash = await bcrypt.hash(verifyToken, 10);
+    const verifyExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await this.prisma.authToken.create({
+      data: {
+        accountId: result.account.id,
+        tokenHash: verifyTokenHash,
+        tokenPrefix: verifyTokenPrefix,
+        purpose: 'email_verify',
+        expiresAt: verifyExpiresAt,
+      },
+    });
+
+    this.emailService
+      .sendVerificationEmail(
+        result.account.email,
+        verifyToken,
+        result.account.fullName ?? undefined,
+      )
+      .catch((err) =>
+        console.error(`Failed to send verification email: ${err.message}`),
+      );
+
     return {
       token,
       account: {
@@ -102,7 +129,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const normalizedEmail = dto.email.toLowerCase().trim();
 
-    const account = await this.prisma.account.findUnique({
+    const account = await this.prisma.account.findFirst({
       where: { email: normalizedEmail },
     });
 
@@ -148,7 +175,7 @@ export class AuthService {
 
   async requestPasswordReset(email: string) {
     const normalizedEmail = email.toLowerCase().trim();
-    const account = await this.prisma.account.findUnique({
+    const account = await this.prisma.account.findFirst({
       where: { email: normalizedEmail },
     });
 
@@ -164,26 +191,35 @@ export class AuthService {
     });
 
     const token = randomBytes(32).toString('hex');
-    const tokenHash = await bcrypt.hash(token, 4);
+    const tokenPrefix = token.slice(0, 8);
+    const tokenHash = await bcrypt.hash(token, 10);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await this.prisma.authToken.create({
       data: {
         accountId: account.id,
         tokenHash,
+        tokenPrefix,
         purpose: 'password_reset',
         expiresAt,
       },
     });
 
-    console.log(`Password reset token for ${normalizedEmail}: ${token}`);
+    this.emailService
+      .sendPasswordResetEmail(account.email, token, account.fullName ?? undefined)
+      .catch((err) =>
+        console.error(`Failed to send password reset email: ${err.message}`),
+      );
 
     return { message: 'If an account exists, a reset email has been sent' };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const authTokens = await this.prisma.authToken.findMany({
+    const tokenPrefix = dto.token.slice(0, 8);
+
+    const authToken = await this.prisma.authToken.findFirst({
       where: {
+        tokenPrefix,
         purpose: 'password_reset',
         expiresAt: { gt: new Date() },
         usedAt: null,
@@ -191,19 +227,12 @@ export class AuthService {
       include: { account: true },
     });
 
-    let matchedToken = null;
-    let matchedAccount = null;
-
-    for (const at of authTokens) {
-      const valid = await bcrypt.compare(dto.token, at.tokenHash);
-      if (valid) {
-        matchedToken = at;
-        matchedAccount = at.account;
-        break;
-      }
+    if (!authToken) {
+      throw new BadRequestException('Invalid or expired reset token');
     }
 
-    if (!matchedToken || !matchedAccount) {
+    const valid = await bcrypt.compare(dto.token, authToken.tokenHash);
+    if (!valid) {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
@@ -211,17 +240,54 @@ export class AuthService {
 
     await this.prisma.$transaction(async (tx) => {
       await tx.account.update({
-        where: { id: matchedAccount.id },
+        where: { id: authToken.account.id },
         data: { passwordHash },
       });
 
       await tx.authToken.update({
-        where: { id: matchedToken.id },
+        where: { id: authToken.id },
         data: { usedAt: new Date() },
       });
     });
 
     return { message: 'Password has been reset successfully' };
+  }
+
+  async verifyEmail(token: string) {
+    const tokenPrefix = token.slice(0, 8);
+
+    const authToken = await this.prisma.authToken.findFirst({
+      where: {
+        tokenPrefix,
+        purpose: 'email_verify',
+        expiresAt: { gt: new Date() },
+        usedAt: null,
+      },
+      include: { account: true },
+    });
+
+    if (!authToken) {
+      throw new BadRequestException('Invalid or expired verification token');
+    }
+
+    const valid = await bcrypt.compare(token, authToken.tokenHash);
+    if (!valid) {
+      throw new BadRequestException('Invalid or expired verification token');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.account.update({
+        where: { id: authToken.account.id },
+        data: { emailVerified: true },
+      });
+
+      await tx.authToken.update({
+        where: { id: authToken.id },
+        data: { usedAt: new Date() },
+      });
+    });
+
+    return { message: 'Email verified successfully' };
   }
 
   private generateToken(account: { id: string; email: string }): string {

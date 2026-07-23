@@ -21,6 +21,19 @@ export class StaffShiftsService {
       throw new BadRequestException('End time must be after start time');
     }
 
+    const conflict = await this.prisma.staffShift.findFirst({
+      where: {
+        orgId,
+        accountId: data.accountId,
+        startTime: { lt: end },
+        endTime: { gt: start },
+      },
+    });
+
+    if (conflict) {
+      throw new BadRequestException('Staff member already has a shift at this time');
+    }
+
     return this.prisma.staffShift.create({
       data: { orgId, accountId: data.accountId, startTime: start, endTime: end },
     });

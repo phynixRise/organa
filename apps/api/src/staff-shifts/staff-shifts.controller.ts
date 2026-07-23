@@ -2,6 +2,7 @@ import { Controller, Get, Post, Delete, Body, Param, UseGuards } from '@nestjs/c
 import { StaffShiftsService } from './staff-shifts.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OrgMembershipGuard } from '../common/guards/org-membership.guard';
+import { CreateStaffShiftDto } from './dto/staff-shift.dto';
 
 @Controller('organizations/:orgId/staff-shifts')
 @UseGuards(JwtAuthGuard, OrgMembershipGuard)
@@ -14,8 +15,8 @@ export class StaffShiftsController {
   }
 
   @Post()
-  create(@Param('orgId') orgId: string, @Body() body: any) {
-    return this.staffShiftsService.create(orgId, body);
+  create(@Param('orgId') orgId: string, @Body() dto: CreateStaffShiftDto) {
+    return this.staffShiftsService.create(orgId, dto);
   }
 
   @Delete(':id')

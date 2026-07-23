@@ -51,6 +51,11 @@ export class SuperAdminService {
   async suspendOrg(accountId: string, orgId: string) {
     await this.verifySuperAdmin(accountId);
 
+    const org = await this.prisma.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
+
     return this.prisma.organization.update({
       where: { id: orgId },
       data: { status: 'suspended' },
@@ -59,6 +64,11 @@ export class SuperAdminService {
 
   async reinstateOrg(accountId: string, orgId: string) {
     await this.verifySuperAdmin(accountId);
+
+    const org = await this.prisma.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
 
     return this.prisma.organization.update({
       where: { id: orgId },
