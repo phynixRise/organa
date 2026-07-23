@@ -1,0 +1,25 @@
+{
+  "name": "organa",
+  "private": true,
+  "workspaces": [
+    "core",
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "build": "npm run build -w packages/shared && npm run build -w apps/api && npm run build -w apps/web",
+    "db:generate": "npm run db:generate -w core",
+    "db:push": "npm run db:push -w core",
+    "db:migrate": "npm run db:migrate -w core",
+    "db:studio": "npm run db:studio -w core",
+    "lint": "npm run lint -w apps/api && npm run lint -w apps/web",
+    "test": "npm run test -w apps/api"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,348 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Account {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  emailVerified  Boolean         @default(false)
+  phone          String?
+  passwordHash   String
+  fullName       String?
+  createdAt      DateTime        @default(now())
+  authTokens     AuthToken[]
+  memberships    Membership[]
+  ownedOrgs      Organization[]  @relation("OrgOwner")
+  platformAdmin  PlatformAdmin?
+  subscriptions  Subscription[]
+  subPayments    SubscriptionPayment[]
+  staffShifts    StaffShift[]
+  ordersRung     Order[]         @relation("StaffAccount")
+  appointments   Appointment[]   @relation("StaffAppointments")
+  medicalRecords MedicalRecord[] @relation("CreatedBy")
+  auditLogs      AuditLog[]
+}
+
+model AuthToken {
+  id        String    @id @default(uuid())
+  accountId String
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tokenHash String
+  purpose   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([accountId])
+}
+
+model Organization {
+  id               String          @id @default(uuid())
+  name             String
+  businessType     String
+  subdomain        String?         @unique
+  status           String          @default("active")
+  ownerAccountId   String
+  owner            Account         @relation("OrgOwner", fields: [ownerAccountId], references: [id])
+  defaultCurrency  String          @default("TND")
+  timezone         String          @default("Africa/Tunis")
+  locale           String          @default("fr")
+  hardwarePackage  String?
+  updatedAt        DateTime        @default(now())
+  createdAt        DateTime        @default(now())
+  memberships      Membership[]
+  customers        Customer[]
+  locations        Location[]
+  products         ProductService[]
+  staffShifts      StaffShift[]
+  orders           Order[]
+  orderItems       OrderItem[]
+  payments         Payment[]
+  appointments     Appointment[]
+  inventoryStock   InventoryStock[]
+  gymMemberships   GymMembership[]
+  medicalRecords   MedicalRecord[]
+  orgFeatures      OrgFeature[]
+  events           Event[]
+  auditLogs        AuditLog[]
+}
+
+model Membership {
+  id        String    @id @default(uuid())
+  accountId String
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  role      String
+  createdAt DateTime  @default(now())
+
+  @@unique([accountId, orgId])
+  @@index([accountId])
+  @@index([orgId])
+}
+
+model PlatformAdmin {
+  id              String    @id @default(uuid())
+  accountId       String    @unique
+  account         Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  permissionLevel String
+  createdAt       DateTime  @default(now())
+}
+
+model Plan {
+  id            String         @id @default(uuid())
+  name          String
+  priceMillimes Int
+  currency      String         @default("TND")
+  maxOrgs       Int?
+  features      String         @default("{}")
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id               String                @id @default(uuid())
+  accountId        String
+  account          Account               @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  planId           String
+  plan             Plan                  @relation(fields: [planId], references: [id])
+  status           String
+  currentPeriodEnd DateTime
+  gracePeriodEnd   DateTime?
+  createdAt        DateTime              @default(now())
+  payments         SubscriptionPayment[]
+
+  @@index([accountId])
+}
+
+model SubscriptionPayment {
+  id                String       @id @default(uuid())
+  subscriptionId    String
+  subscription      Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  accountId         String
+  account           Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  amountMillimes    Int
+  currency          String       @default("TND")
+  provider          String
+  providerReference String?
+  status            String
+  periodStart       DateTime?
+  periodEnd         DateTime?
+  createdAt         DateTime     @default(now())
+
+  @@index([accountId])
+  @@index([subscriptionId])
+}
+
+model Customer {
+  id         String   @id @default(uuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name       String
+  phone      String?
+  email      String?
+  attributes String   @default("{}")
+  updatedAt  DateTime @default(now())
+  createdAt  DateTime @default(now())
+  orders     Order[]
+  appointments Appointment[]
+  gymMemberships GymMembership[]
+  medicalPatients MedicalRecord[]
+
+  @@index([orgId])
+}
+
+model Location {
+  id         String       @id @default(uuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name       String
+  attributes String       @default("{}")
+  orders     Order[]
+  appointments Appointment[]
+
+  @@index([orgId])
+}
+
+model ProductService {
+  id             String          @id @default(uuid())
+  orgId          String
+  org            Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  type           String
+  name           String
+  barcode        String?
+  priceMillimes  Int
+  currency       String          @default("TND")
+  attributes     String          @default("{}")
+  active         Boolean         @default(true)
+  updatedAt      DateTime        @default(now())
+  createdAt      DateTime        @default(now())
+  orderItems     OrderItem[]
+  inventoryStock InventoryStock[]
+
+  @@index([orgId])
+}
+
+model StaffShift {
+  id        String       @id @default(uuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime
+
+  @@index([orgId])
+}
+
+model Order {
+  id             String       @id @default(uuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  customerId     String?
+  customer       Customer?    @relation(fields: [customerId], references: [id])
+  locationId     String?
+  location       Location?    @relation(fields: [locationId], references: [id])
+  staffAccountId String?
+  staffAccount   Account?     @relation("StaffAccount", fields: [staffAccountId], references: [id])
+  status         String       @default("open")
+  totalMillimes  Int          @default(0)
+  currency       String       @default("TND")
+  updatedAt      DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  items          OrderItem[]
+  payments       Payment[]
+
+  @@index([orgId])
+}
+
+model OrderItem {
+  id            String         @id @default(uuid())
+  orgId         String
+  org           Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orderId       String
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId     String
+  product       ProductService @relation(fields: [productId], references: [id])
+  qty           Int
+  priceMillimes Int
+
+  @@index([orderId])
+  @@index([orgId])
+}
+
+model Payment {
+  id             String       @id @default(uuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orderId        String
+  order          Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amountMillimes Int
+  method         String
+  provider       String?
+  status         String
+  createdAt      DateTime     @default(now())
+
+  @@index([orgId])
+}
+
+model Appointment {
+  id             String       @id @default(uuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  customerId     String?
+  customer       Customer?    @relation(fields: [customerId], references: [id])
+  staffAccountId String?
+  staffAccount   Account?     @relation("StaffAppointments", fields: [staffAccountId], references: [id])
+  locationId     String?
+  location       Location?    @relation(fields: [locationId], references: [id])
+  startTime      DateTime
+  endTime        DateTime
+  status         String       @default("booked")
+  createdAt      DateTime     @default(now())
+
+  @@index([orgId])
+}
+
+model InventoryStock {
+  id           String         @id @default(uuid())
+  orgId        String
+  org          Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  productId    String
+  product      ProductService @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity     Int            @default(0)
+  reorderLevel Int            @default(0)
+  updatedAt    DateTime       @default(now())
+
+  @@unique([orgId, productId])
+  @@index([orgId])
+}
+
+model GymMembership {
+  id         String       @id @default(uuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  customerId String
+  customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  planName   String
+  startDate  DateTime
+  endDate    DateTime
+
+  @@index([orgId])
+}
+
+model MedicalRecord {
+  id        String       @id @default(uuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  patientId String
+  patient   Customer     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  notes     String?
+  createdBy String?
+  creator   Account?     @relation("CreatedBy", fields: [createdBy], references: [id])
+  createdAt DateTime     @default(now())
+
+  @@index([orgId])
+}
+
+model OrgFeature {
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  featureKey String
+  enabled    Boolean      @default(true)
+  config     String       @default("{}")
+
+  @@id([orgId, featureKey])
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  type        String
+  payload     String    @default("{}")
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+  attempts    Int       @default(0)
+  lastError   String?
+
+  @@index([orgId])
+}
+
+model AuditLog {
+  id        String       @id @default(uuid())
+  orgId     String?
+  org       Organization? @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  accountId String?
+  account   Account?     @relation(fields: [accountId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  createdAt DateTime     @default(now())
+
+  @@index([orgId])
+}
