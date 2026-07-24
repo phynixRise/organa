@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useOrg } from '@/contexts/org-context';
 import { api } from '@/lib/api';
 import { Search, Plus, UserCheck, UserX, Mail, Phone } from 'lucide-react';
+import Link from 'next/link';
 
 interface Member { id: string; name: string; email: string | null; phone: string | null; barcode: string | null; createdAt: string; }
 
@@ -72,7 +73,7 @@ export default function GymMembers() {
       {loading ? <div className="text-center py-12 text-[#9CA3AF]">Chargement...</div> : filtered.length === 0 ? <div className="text-center py-12 text-[#9CA3AF]">{search ? 'Aucun membre trouvé' : 'Aucun membre'}</div> : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map((m) => (
-            <div key={m.id} className="card-gym hover:border-[#F97316]/30 transition-colors">
+            <Link key={m.id} href={`/gym/members/${m.id}`} className="block card-gym hover:border-[#F97316]/30 transition-colors cursor-pointer">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#F97316]/10 rounded-full flex items-center justify-center"><UserCheck className="w-5 h-5 text-[#F97316]" /></div>
@@ -88,7 +89,7 @@ export default function GymMembers() {
                 {m.phone && <div className="flex items-center gap-2 text-xs text-[#9CA3AF]"><Phone className="w-3 h-3" />{m.phone}</div>}
                 {m.barcode && <div className="flex items-center gap-2 text-xs text-[#9CA3AF] font-mono"><span className="text-[#6B7280]">⊞</span>{m.barcode}</div>}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

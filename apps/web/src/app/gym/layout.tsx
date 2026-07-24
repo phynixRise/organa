@@ -1,14 +1,64 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useOrg } from '@/contexts/org-context';
 import Link from 'next/link';
 import {
   LayoutDashboard, Users, CreditCard, CalendarCheck, Settings,
-  Dumbbell, LogOut, ChevronLeft, ChevronRight, Menu, X
+  Dumbbell, LogOut, ChevronLeft, ChevronRight, Menu, X, ChevronDown
 } from 'lucide-react';
+
+function OrgSwitcherGym() {
+  const { orgs, selectedOrg, selectOrg } = useOrg();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  if (!selectedOrg || orgs.length <= 1) return null;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-2 px-3 py-1.5 bg-[#1C1C27] border border-white/5 rounded-lg hover:bg-[#22222E] text-sm transition">
+        <Dumbbell className="w-4 h-4 text-[#F97316]" />
+        <span className="text-[#F8F8F2] font-medium">{selectedOrg.name}</span>
+        <ChevronDown className="w-4 h-4 text-[#9CA3AF]" />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-64 bg-[#111118] border border-white/5 rounded-xl shadow-2xl z-50 py-1">
+          <div className="px-3 py-2 text-xs text-[#9CA3AF] uppercase tracking-wide">Mes entreprises</div>
+          {orgs.map((org) => {
+            const isGym = ['gym', 'fitness', 'salle_de_sport'].includes(org.businessType);
+            return (
+              <button
+                key={org.id}
+                onClick={() => { selectOrg(org); setOpen(false); }}
+                className={`w-full text-left px-3 py-2 flex items-center gap-3 text-sm hover:bg-[#1C1C27] transition ${org.id === selectedOrg.id ? 'bg-[#F97316]/10' : ''}`}
+              >
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isGym ? 'bg-[#F97316]/10' : 'bg-[#3B82F6]/10'}`}>
+                  {isGym ? <Dumbbell className="w-4 h-4 text-[#F97316]" /> : <LayoutDashboard className="w-4 h-4 text-[#3B82F6]" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[#F8F8F2] font-medium truncate">{org.name}</div>
+                  <div className="text-xs text-[#9CA3AF]">{org.businessType}</div>
+                </div>
+                {org.id === selectedOrg.id && <span className="text-[#F97316]">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const GYM_NAV = [
   { label: 'Tableau de bord', href: '/gym/dashboard', icon: LayoutDashboard },
@@ -123,7 +173,9 @@ export default function GymLayout({ children }: { children: React.ReactNode }) {
           <button onClick={() => setMobileOpen(true)} className="lg:hidden text-[#9CA3AF]">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex-1" />
+          <div className="flex-1">
+            <OrgSwitcherGym />
+          </div>
           <div className="text-sm text-[#9CA3AF]">
             {account.fullName || account.email}
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 
 interface Organization {
@@ -10,11 +11,18 @@ interface Organization {
   status: string;
 }
 
+const GYM_TYPES = ['gym', 'fitness', 'salle_de_sport'];
+
+function getDashboardPath(businessType: string): string {
+  if (GYM_TYPES.includes(businessType)) return '/gym/dashboard';
+  return '/';
+}
+
 interface OrgState {
   orgs: Organization[];
   selectedOrg: Organization | null;
   loading: boolean;
-  selectOrg: (org: Organization) => void;
+  selectOrg: (org: Organization, redirect?: boolean) => void;
   createOrg: (data: { name: string; businessType: string }) => Promise<Organization>;
   refreshOrgs: () => Promise<void>;
 }
@@ -25,6 +33,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const refreshOrgs = useCallback(async () => {
     try {
@@ -49,18 +59,28 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     refreshOrgs();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const selectOrg = useCallback((org: Organization) => {
+  const selectOrg = useCallback((org: Organization, redirect = true) => {
     setSelectedOrg(org);
     localStorage.setItem('orgId', org.id);
-  }, []);
+    if (redirect) {
+      const target = getDashboardPath(org.businessType);
+      // Only redirect if we're on a dashboard path
+      const isDashboardPath = pathname === '/' || pathname.startsWith('/gym');
+      if (isDashboardPath && pathname !== target) {
+        router.push(target);
+      }
+    }
+  }, [router, pathname]);
 
   const createOrg = useCallback(async (data: { name: string; businessType: string }) => {
     const org = await api.post<Organization>('/organizations', data);
     setOrgs((prev) => [...prev, org]);
     setSelectedOrg(org);
     localStorage.setItem('orgId', org.id);
+    const target = getDashboardPath(org.businessType);
+    router.push(target);
     return org;
-  }, []);
+  }, [router]);
 
   return (
     <OrgContext.Provider value={{ orgs, selectedOrg, loading, selectOrg, createOrg, refreshOrgs }}>
