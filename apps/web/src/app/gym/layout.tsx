@@ -7,7 +7,7 @@ import { useOrg } from '@/contexts/org-context';
 import Link from 'next/link';
 import {
   LayoutDashboard, Users, CreditCard, CalendarCheck, Settings,
-  Dumbbell, LogOut, ChevronLeft, ChevronRight, Menu, X, ChevronDown
+  Dumbbell, LogOut, ChevronLeft, ChevronRight, Menu, X, ChevronDown, Home
 } from 'lucide-react';
 
 function OrgSwitcherGym() {
@@ -173,6 +173,9 @@ export default function GymLayout({ children }: { children: React.ReactNode }) {
           <button onClick={() => setMobileOpen(true)} className="lg:hidden text-[#9CA3AF]">
             <Menu className="w-5 h-5" />
           </button>
+          <Link href="/" className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#9CA3AF] hover:text-[#F8F8F2] hover:bg-[#1C1C27] rounded-lg transition">
+            <Home className="w-4 h-4" /> Accueil
+          </Link>
           <div className="flex-1">
             <OrgSwitcherGym />
           </div>

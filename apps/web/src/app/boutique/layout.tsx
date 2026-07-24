@@ -7,7 +7,7 @@ import { useOrg } from '@/contexts/org-context';
 import Link from 'next/link';
 import {
   LayoutDashboard, ShoppingCart, Package, Users, BarChart3, Settings,
-  Store, LogOut, ChevronLeft, ChevronRight, Menu, X, ChevronDown, Warehouse
+  Store, LogOut, ChevronLeft, ChevronRight, Menu, X, ChevronDown, Warehouse, Home
 } from 'lucide-react';
 
 function OrgSwitcherBoutique() {
@@ -152,6 +152,9 @@ export default function BoutiqueLayout({ children }: { children: React.ReactNode
       <div className="flex-1 flex flex-col min-w-0">
         <header className="bg-[#111118] border-b border-white/5 px-4 py-3 flex items-center gap-4">
           <button onClick={() => setMobileOpen(true)} className="lg:hidden text-[#9CA3AF]"><Menu className="w-5 h-5" /></button>
+          <Link href="/" className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#9CA3AF] hover:text-[#F8F8F2] hover:bg-[#1C1C27] rounded-lg transition">
+            <Home className="w-4 h-4" /> Accueil
+          </Link>
           <div className="flex-1"><OrgSwitcherBoutique /></div>
           <div className="text-sm text-[#9CA3AF]">{account.fullName || account.email}</div>
         </header>

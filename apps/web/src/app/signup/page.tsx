@@ -3,34 +3,16 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-
-const GYM_TYPES = ['gym', 'fitness', 'salle_de_sport'];
-const BOUTIQUE_TYPES = ['boutique', 'tienda'];
-const CAFE_TYPES = ['cafe', 'restaurant'];
-
-function getDashboardPath(businessType: string): string {
-  if (GYM_TYPES.includes(businessType)) return '/gym/dashboard';
-  if (BOUTIQUE_TYPES.includes(businessType)) return '/boutique/dashboard';
-  if (CAFE_TYPES.includes(businessType)) return '/cafe/dashboard';
-  return '/boutique/dashboard';
-}
+import { Zap } from 'lucide-react';
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const router = useRouter();
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    businessName: '',
-    businessType: 'gym',
-  });
+  const [form, setForm] = useState({ email: '', password: '', fullName: '', businessName: '', businessType: 'gym' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  function update(field: string, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }
+  function update(field: string, value: string) { setForm((p) => ({ ...p, [field]: value })); }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,7 +20,7 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await signup(form);
-      router.replace(getDashboardPath(form.businessType));
+      router.replace('/');
     } catch (err: any) {
       setError(err?.message || "Erreur d'inscription");
     } finally {
@@ -49,14 +31,13 @@ export default function SignupPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 bg-[#0A0A0F]">
       <div className="w-full max-w-sm">
-        <h1 className="text-3xl font-bold text-center mb-8 text-[#F97316] font-display tracking-wider">ORGANA</h1>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center"><Zap className="w-5 h-5 text-white" /></div>
+          <span className="font-display text-2xl text-[#F8F8F2] tracking-wider">ORGANA</span>
+        </div>
         <div className="card-gym p-6">
           <h2 className="text-lg font-semibold text-center mb-4 text-[#F8F8F2]">Créer un compte</h2>
-          {error && (
-            <div className="mb-4 p-3 bg-[#EF4444]/10 text-[#EF4444] text-sm rounded-lg border border-[#EF4444]/20">
-              {error}
-            </div>
-          )}
+          {error && <div className="mb-4 p-3 bg-[#EF4444]/10 text-[#EF4444] text-sm rounded-lg border border-[#EF4444]/20">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#9CA3AF] mb-1">Nom complet</label>
@@ -98,8 +79,7 @@ export default function SignupPage() {
           </form>
         </div>
         <p className="text-center text-sm text-[#9CA3AF] mt-4">
-          Déjà un compte ?{' '}
-          <a href="/login" className="text-[#F97316] hover:underline">Se connecter</a>
+          Déjà un compte ? <a href="/login" className="text-[#F97316] hover:underline">Se connecter</a>
         </p>
       </div>
     </main>
