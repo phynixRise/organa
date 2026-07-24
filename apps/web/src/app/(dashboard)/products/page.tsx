@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useOrg } from '@/contexts/org-context';
 import { api } from '@/lib/api';
+import JsBarcode from 'jsbarcode';
 
 interface Product {
   id: string;
@@ -10,7 +11,38 @@ interface Product {
   type: string;
   priceMillimes: number;
   description: string | null;
+  barcode: string | null;
   isActive: boolean;
+}
+
+function BarcodeCell({ barcode, productId }: { barcode: string | null; productId: string }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [showBarcode, setShowBarcode] = useState(!!barcode);
+
+  useEffect(() => {
+    if (showBarcode && svgRef.current && barcode) {
+      try {
+        JsBarcode(svgRef.current, barcode, { format: 'CODE128', width: 1.5, height: 30, displayValue: true, fontSize: 10 });
+      } catch {}
+    }
+  }, [showBarcode, barcode]);
+
+  if (!showBarcode || !barcode) {
+    return (
+      <button
+        onClick={() => setShowBarcode(true)}
+        className="text-xs text-blue-600 hover:underline"
+      >
+        Générer
+      </button>
+    );
+  }
+
+  return (
+    <div className="cursor-pointer" onClick={() => setShowBarcode(false)} title="Cliquer pour masquer">
+      <svg ref={svgRef} />
+    </div>
+  );
 }
 
 export default function ProductsPage() {
@@ -127,6 +159,7 @@ export default function ProductsPage() {
                   <th className="px-4 py-2 font-medium">Nom</th>
                   <th className="px-4 py-2 font-medium">Type</th>
                   <th className="px-4 py-2 font-medium">Prix</th>
+                  <th className="px-4 py-2 font-medium">Code-barres</th>
                   <th className="px-4 py-2 font-medium">Statut</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
@@ -137,6 +170,9 @@ export default function ProductsPage() {
                     <td className="px-4 py-2 font-medium">{p.name}</td>
                     <td className="px-4 py-2 text-gray-500">{p.type === 'product' ? 'Produit' : 'Service'}</td>
                     <td className="px-4 py-2 font-medium">{(p.priceMillimes / 1000).toFixed(3)} TND</td>
+                    <td className="px-4 py-2">
+                      <BarcodeCell barcode={p.barcode} productId={p.id} />
+                    </td>
                     <td className="px-4 py-2">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${p.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {p.isActive ? 'Actif' : 'Inactif'}

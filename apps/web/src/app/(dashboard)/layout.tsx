@@ -8,6 +8,7 @@ import OrgSwitcher from './org-switcher';
 
 const NAV_ITEMS = [
   { label: 'Tableau de bord', href: '/', icon: '📊' },
+  { label: 'Caisse', href: '/pos', icon: '💳' },
   { label: 'Ventes', href: '/orders', icon: '🛒' },
   { label: 'Articles', href: '/products', icon: '📦' },
   { label: 'Stock', href: '/inventory', icon: '📋' },
