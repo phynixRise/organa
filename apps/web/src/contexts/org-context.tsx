@@ -27,7 +27,7 @@ interface OrgState {
   selectedOrg: Organization | null;
   loading: boolean;
   selectOrg: (org: Organization, redirect?: boolean) => void;
-  createOrg: (data: { name: string; businessType: string }) => Promise<Organization>;
+  createOrg: (data: { name: string; businessType: string }, redirect?: boolean) => Promise<Organization>;
   refreshOrgs: () => Promise<void>;
 }
 
@@ -48,18 +48,38 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       const match = data.find((o) => o.id === savedId);
       if (match) {
         setSelectedOrg(match);
-      } else if (data.length > 0 && !selectedOrg) {
-        setSelectedOrg(data[0]);
-        localStorage.setItem('orgId', data[0].id);
+      } else if (data.length > 0) {
+        const first = data[0];
+        setSelectedOrg(first);
+        localStorage.setItem('orgId', first.id);
+      } else {
+        setSelectedOrg(null);
+        localStorage.removeItem('orgId');
       }
     } catch {
+      setOrgs([]);
+      setSelectedOrg(null);
     } finally {
       setLoading(false);
     }
-  }, [selectedOrg]);
+  }, []);
 
   useEffect(() => {
     refreshOrgs();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'token') {
+        refreshOrgs();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    const t = setTimeout(() => refreshOrgs(), 500);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearTimeout(t);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectOrg = useCallback((org: Organization, redirect = true) => {
@@ -67,20 +87,19 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('orgId', org.id);
     if (redirect) {
       const target = getDashboardPath(org.businessType);
-      const isDashboardPath = pathname === '/' || pathname.startsWith('/gym') || pathname.startsWith('/boutique') || pathname.startsWith('/cafe');
-      if (isDashboardPath && pathname !== target) {
-        router.push(target);
-      }
+      router.push(target);
     }
-  }, [router, pathname]);
+  }, [router]);
 
-  const createOrg = useCallback(async (data: { name: string; businessType: string }) => {
+  const createOrg = useCallback(async (data: { name: string; businessType: string }, redirect = true) => {
     const org = await api.post<Organization>('/organizations', data);
     setOrgs((prev) => [...prev, org]);
     setSelectedOrg(org);
     localStorage.setItem('orgId', org.id);
-    const target = getDashboardPath(org.businessType);
-    router.push(target);
+    if (redirect) {
+      const target = getDashboardPath(org.businessType);
+      router.push(target);
+    }
     return org;
   }, [router]);
 

@@ -158,35 +158,43 @@ function BusinessCard({ org, onOpen, onDelete, onEdit }: {
 }
 
 function BusinessManagerTab() {
-  const { account, logout } = useAuth();
+  const { logout } = useAuth();
   const { orgs, selectOrg, createOrg, refreshOrgs } = useOrg();
-  const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ name: '', businessType: 'gym' });
-  const [editingOrg, setEditingOrg] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name.trim()) return;
-    await createOrg(form);
-    setForm({ name: '', businessType: 'gym' });
-    setShowCreate(false);
+    if (!form.name.trim() || creating) return;
+    setCreating(true);
+    try {
+      await createOrg(form, false);
+      await refreshOrgs();
+      setForm({ name: '', businessType: 'gym' });
+      setShowCreate(false);
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function handleDelete(org: any) {
-    if (!confirm(`Supprimer "${org.name}" ?`)) return;
-    await api.delete(`/organizations/${org.id}`);
-    await refreshOrgs();
+    if (!confirm(`Supprimer "${org.name}" ? Cette action est irréversible.`)) return;
+    try {
+      await api.delete(`/organizations/${org.id}`);
+      await refreshOrgs();
+    } catch {}
   }
 
   async function handleEditName(org: any, newName: string) {
-    await api.put(`/organizations/${org.id}`, { name: newName });
-    await refreshOrgs();
+    try {
+      await api.put(`/organizations/${org.id}`, { name: newName });
+      await refreshOrgs();
+    } catch {}
   }
 
   function openBusiness(org: any) {
     selectOrg(org, true);
-    router.push(getDashboardPath(org.businessType));
   }
 
   return (
@@ -213,7 +221,10 @@ function BusinessManagerTab() {
               <option value="cafe">Café / Restaurant</option>
               <option value="boutique">Boutique</option>
             </select>
-            <button type="submit" className="px-4 py-2 bg-[#F97316] text-white rounded-lg text-sm font-medium hover:bg-[#EA580C] transition">Créer</button>
+            <button type="submit" disabled={creating}
+              className="px-4 py-2 bg-[#F97316] text-white rounded-lg text-sm font-medium hover:bg-[#EA580C] transition disabled:opacity-50">
+              {creating ? 'Création...' : 'Créer'}
+            </button>
           </div>
         </form>
       )}

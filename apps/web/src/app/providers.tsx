@@ -1,13 +1,28 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { AuthProvider } from '@/contexts/auth-context';
-import { OrgProvider } from '@/contexts/org-context';
+import { ReactNode, useRef, useEffect } from 'react';
+import { AuthProvider, setOrgRefreshHandler } from '@/contexts/auth-context';
+import { OrgProvider, useOrg } from '@/contexts/org-context';
+
+function OrgBridge() {
+  const { refreshOrgs } = useOrg();
+  const set = useRef(false);
+  useEffect(() => {
+    if (!set.current) {
+      setOrgRefreshHandler(refreshOrgs);
+      set.current = true;
+    }
+  }, [refreshOrgs]);
+  return null;
+}
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <OrgProvider>{children}</OrgProvider>
+      <OrgProvider>
+        <OrgBridge />
+        {children}
+      </OrgProvider>
     </AuthProvider>
   );
 }
