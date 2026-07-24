@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'Organa',
-  description: 'One platform for all your businesses',
+  description: 'Une plateforme pour toutes vos entreprises',
 };
 
 export default function RootLayout({
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body>{children}</body>
+      <body className="bg-gray-50 text-gray-900 antialiased">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
