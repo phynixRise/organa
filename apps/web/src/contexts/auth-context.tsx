@@ -52,16 +52,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('token', res.token);
     setToken(res.token);
     setAccount(decodeToken(res.token));
-    router.push('/');
-  }, [router]);
+  }, []);
 
   const signup = useCallback(async (data: { email: string; password: string; fullName: string; businessName: string; businessType: string }) => {
     const res = await api.post<{ token: string; account: Account }>('/auth/signup', data);
     localStorage.setItem('token', res.token);
     setToken(res.token);
     setAccount(decodeToken(res.token));
-    router.push('/');
-  }, [router]);
+  }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
