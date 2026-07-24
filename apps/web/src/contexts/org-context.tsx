@@ -12,10 +12,14 @@ interface Organization {
 }
 
 const GYM_TYPES = ['gym', 'fitness', 'salle_de_sport'];
+const BOUTIQUE_TYPES = ['boutique', 'tienda'];
+const CAFE_TYPES = ['cafe', 'restaurant'];
 
 function getDashboardPath(businessType: string): string {
   if (GYM_TYPES.includes(businessType)) return '/gym/dashboard';
-  return '/';
+  if (BOUTIQUE_TYPES.includes(businessType)) return '/boutique/dashboard';
+  if (CAFE_TYPES.includes(businessType)) return '/cafe/dashboard';
+  return '/boutique/dashboard';
 }
 
 interface OrgState {
@@ -49,7 +53,6 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('orgId', data[0].id);
       }
     } catch {
-      // Not logged in or error
     } finally {
       setLoading(false);
     }
@@ -64,8 +67,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('orgId', org.id);
     if (redirect) {
       const target = getDashboardPath(org.businessType);
-      // Only redirect if we're on a dashboard path
-      const isDashboardPath = pathname === '/' || pathname.startsWith('/gym');
+      const isDashboardPath = pathname === '/' || pathname.startsWith('/gym') || pathname.startsWith('/boutique') || pathname.startsWith('/cafe');
       if (isDashboardPath && pathname !== target) {
         router.push(target);
       }
