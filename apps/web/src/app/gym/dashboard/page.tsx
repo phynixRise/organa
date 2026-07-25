@@ -67,19 +67,19 @@ export default function GymDashboard() {
     });
   }, [selectedOrg]);
 
-  if (!selectedOrg) return <div className="text-center py-12 text-[#9CA3AF]">Sélectionnez une entreprise</div>;
-  if (loading) return <div className="text-center py-12 text-[#9CA3AF]">Chargement...</div>;
+  if (!selectedOrg) return <div className="text-center py-12 text-muted-foreground">Sélectionnez une entreprise</div>;
+  if (loading) return <div className="text-center py-12 text-muted-foreground">Chargement...</div>;
 
   const statCards = [
     { label: 'Membres', value: stats.members, icon: Users, color: 'text-[#22C55E]' },
-    { label: 'Revenu total', value: `${(stats.revenue / 1000).toFixed(3)} TND`, icon: DollarSign, color: 'text-[#F97316]' },
+    { label: 'Revenu total', value: `${(stats.revenue / 1000).toFixed(3)} TND`, icon: DollarSign, color: 'text-brand-teal dark:text-brand-cyan' },
     { label: 'Abonnements actifs', value: stats.active, icon: AlertTriangle, color: 'text-[#22C55E]' },
     { label: 'Gelés', value: stats.frozen, icon: Snowflake, color: 'text-[#3B82F6]' },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl text-[#F8F8F2] tracking-wider">{selectedOrg?.name}</h1>
+      <h1 className="font-display text-3xl text-foreground tracking-wider">{selectedOrg?.name}</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -88,10 +88,10 @@ export default function GymDashboard() {
           return (
             <div key={card.label} className="card-gym">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-[#9CA3AF]">{card.label}</span>
+                <span className="text-sm text-muted-foreground">{card.label}</span>
                 <Icon className={`w-5 h-5 ${card.color}`} />
               </div>
-              <div className="font-display text-3xl text-[#F8F8F2] tracking-wide">{card.value}</div>
+              <div className="font-display text-3xl text-foreground tracking-wide">{card.value}</div>
             </div>
           );
         })}
@@ -107,8 +107,8 @@ export default function GymDashboard() {
               <div className="flex items-center gap-3">
                 <AlertCircle className={`w-5 h-5 ${a.type === 'critical' ? 'text-[#EF4444]' : 'text-[#EAB308]'}`} />
                 <div>
-                  <div className="text-sm font-medium text-[#F8F8F2]">{a.name}</div>
-                  <div className="text-xs text-[#9CA3AF]">
+                  <div className="text-sm font-medium text-foreground">{a.name}</div>
+                  <div className="text-xs text-muted-foreground">
                     {a.daysLeft <= 0 ? 'Abonnement expiré' : `Expire dans ${a.daysLeft} jour(s)`}
                   </div>
                 </div>
@@ -126,16 +126,16 @@ export default function GymDashboard() {
       {/* Revenue Chart */}
       <div className="card-gym">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-[#F97316]" />
-          <h2 className="font-display text-xl text-[#F8F8F2] tracking-wider">Revenus</h2>
+          <TrendingUp className="w-5 h-5 text-brand-teal dark:text-brand-cyan" />
+          <h2 className="font-display text-xl text-foreground tracking-wider">Revenus</h2>
         </div>
         <div className="h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <XAxis dataKey="month" tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: '#111118', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: '#F8F8F2' }} />
-              <Bar dataKey="revenue" fill="#F97316" radius={[4, 4, 0, 0]} />
+              <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '10px', color: 'hsl(var(--foreground))' }} />
+              <Bar dataKey="revenue" fill="hsl(var(--brand-teal))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -143,19 +143,19 @@ export default function GymDashboard() {
 
       {/* Recent Activity */}
       <div className="card-gym">
-        <h2 className="font-display text-xl text-[#F8F8F2] tracking-wider mb-4">Activité récente</h2>
+        <h2 className="font-display text-xl text-foreground tracking-wider mb-4">Activité récente</h2>
         {recentOrders.length === 0 ? (
-          <div className="text-sm text-[#9CA3AF] text-center py-6">Aucune activité</div>
+          <div className="text-sm text-muted-foreground text-center py-6">Aucune activité</div>
         ) : (
           <div className="space-y-2">
             {recentOrders.map((o: any) => (
-              <div key={o.id} className="flex items-center justify-between p-3 bg-[#1C1C27] rounded-lg">
+              <div key={o.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div>
-                  <div className="text-sm text-[#F8F8F2] font-mono">{o.id.slice(0, 8)}...</div>
-                  <div className="text-xs text-[#9CA3AF]">{new Date(o.createdAt).toLocaleDateString('fr')}</div>
+                  <div className="text-sm text-foreground font-mono">{o.id.slice(0, 8)}...</div>
+                  <div className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleDateString('fr')}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-medium text-[#F8F8F2]">{(o.totalMillimes / 1000).toFixed(3)} TND</div>
+                  <div className="text-sm font-medium text-foreground">{(o.totalMillimes / 1000).toFixed(3)} TND</div>
                   <span className={`text-xs px-2 py-0.5 rounded ${o.status === 'completed' ? 'bg-[#22C55E]/10 text-[#22C55E]' : o.status === 'open' ? 'bg-[#3B82F6]/10 text-[#3B82F6]' : 'bg-[#6B7280]/10 text-[#6B7280]'}`}>
                     {o.status === 'completed' ? 'Payé' : o.status === 'open' ? 'En attente' : o.status}
                   </span>

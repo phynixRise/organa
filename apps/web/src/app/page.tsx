@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useOrg } from '@/contexts/org-context';
 import { api } from '@/lib/api';
-import { getDashboardPath, getBizColor, GYM_TYPES, CAFE_TYPES } from '@/lib/constants';
+import { getDashboardPath, getBizColor, ALL_BUSINESS_TYPES, getBizIcon, getBizLabel } from '@/lib/constants';
 import {
-  Dumbbell, Store, Coffee, Plus, Trash2,
-  LayoutDashboard, Edit2, X, Check, Eye, ChevronDown, ArrowRight
+  Plus, Trash2, LayoutDashboard, Edit2, X, Check, Eye, ChevronDown, ArrowRight
 } from 'lucide-react';
 import { ScrollProgress } from '@/components/site/scroll-progress';
 import { SiteHeader } from '@/components/site/header';
@@ -25,9 +24,6 @@ import { Pricing } from '@/components/site/sections/pricing';
 import { Faq } from '@/components/site/sections/faq';
 import { CtaSection } from '@/components/site/sections/cta';
 import { Button } from '@/components/ui/button';
-
-function getBizIcon(t: string) { return GYM_TYPES.includes(t) ? Dumbbell : CAFE_TYPES.includes(t) ? Coffee : Store; }
-function getBizLabel(t: string) { return GYM_TYPES.includes(t) ? 'Salle de sport' : CAFE_TYPES.includes(t) ? 'Café / Restaurant' : 'Boutique'; }
 
 interface BizStats { orders: number; revenue: number; customers: number; products: number; recentOrders: any[]; }
 
@@ -197,9 +193,9 @@ function BusinessManagerTab() {
               className="px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-cyan" required />
             <select value={form.businessType} onChange={(e) => setForm((p) => ({ ...p, businessType: e.target.value }))}
               className="px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand-cyan">
-              <option value="gym">Salle de sport</option>
-              <option value="cafe">Café / Restaurant</option>
-              <option value="boutique">Boutique</option>
+              {ALL_BUSINESS_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
             </select>
             <button type="submit" disabled={creating}
               className="px-4 py-2 bg-brand-teal text-white rounded-lg text-sm font-medium hover:bg-brand-teal/90 transition disabled:opacity-50">

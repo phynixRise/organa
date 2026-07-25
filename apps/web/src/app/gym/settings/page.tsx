@@ -29,7 +29,7 @@ export default function GymSettings() {
   const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
   const [saved, setSaved] = useState(false);
 
-  if (!selectedOrg) return <div className="text-center py-12 text-[#9CA3AF]">Sélectionnez une entreprise</div>;
+  if (!selectedOrg) return <div className="text-center py-12 text-muted-foreground">Sélectionnez une entreprise</div>;
 
   const tabs = [
     { id: 'profile', label: 'Profil', icon: Settings },
@@ -47,15 +47,15 @@ export default function GymSettings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl text-[#F8F8F2] tracking-wider">Paramètres</h1>
+      <h1 className="font-display text-3xl text-foreground tracking-wider">Paramètres</h1>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-[#111118] border border-white/5 rounded-lg p-1">
+      <div className="flex gap-1 bg-background border border-border rounded-lg p-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition ${activeTab === tab.id ? 'bg-[#F97316] text-white' : 'text-[#9CA3AF] hover:text-[#F8F8F2] hover:bg-[#1C1C27]'}`}>
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition ${activeTab === tab.id ? 'bg-brand-teal text-white' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
               <Icon className="w-4 h-4" />{tab.label}
             </button>
           );
@@ -65,10 +65,10 @@ export default function GymSettings() {
       {/* Profile */}
       {activeTab === 'profile' && (
         <div className="card-gym space-y-4">
-          <h2 className="font-display text-xl text-[#F8F8F2] tracking-wider">Profil de l'entreprise</h2>
+          <h2 className="font-display text-xl text-foreground tracking-wider">Profil de l'entreprise</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className="text-xs text-[#9CA3AF] mb-1 block">Nom</label><div className="px-3 py-2 bg-[#1C1C27] border border-white/5 rounded-lg text-sm text-[#F8F8F2]">{selectedOrg.name}</div></div>
-            <div><label className="text-xs text-[#9CA3AF] mb-1 block">Type</label><div className="px-3 py-2 bg-[#1C1C27] border border-white/5 rounded-lg text-sm text-[#F8F8F2]">{selectedOrg.businessType}</div></div>
+            <div><label className="text-xs text-muted-foreground mb-1 block">Nom</label><div className="px-3 py-2 bg-muted border border-border rounded-lg text-sm text-foreground">{selectedOrg.name}</div></div>
+            <div><label className="text-xs text-muted-foreground mb-1 block">Type</label><div className="px-3 py-2 bg-muted border border-border rounded-lg text-sm text-foreground">{selectedOrg.businessType}</div></div>
           </div>
         </div>
       )}
@@ -77,24 +77,24 @@ export default function GymSettings() {
       {activeTab === 'notifications' && (
         <div className="card-gym space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl text-[#F8F8F2] tracking-wider">Modèles de notifications</h2>
-            <button onClick={handleSave} className="flex items-center gap-2 px-3 py-1.5 bg-[#F97316] text-white text-sm rounded-lg hover:bg-[#EA580C] transition">
+            <h2 className="font-display text-xl text-foreground tracking-wider">Modèles de notifications</h2>
+            <button onClick={handleSave} className="flex items-center gap-2 px-3 py-1.5 bg-brand-teal text-white text-sm rounded-lg hover:bg-brand-teal/90 transition">
               <Save className="w-4 h-4" />{saved ? 'Sauvegardé !' : 'Sauvegarder'}
             </button>
           </div>
-          <p className="text-xs text-[#9CA3AF]">Variables disponibles: {'{name}'}, {'{plan}'}, {'{endDate}'}, {'{gymName}'}, {'{amount}'}, {'{resumeDate}'}</p>
+          <p className="text-xs text-muted-foreground">Variables disponibles: {'{name}'}, {'{plan}'}, {'{endDate}'}, {'{gymName}'}, {'{amount}'}, {'{resumeDate}'}</p>
 
           {Object.entries(templates).map(([key, value]) => (
-            <div key={key} className="space-y-2 p-3 bg-[#1C1C27] rounded-lg">
-              <div className="text-sm font-medium text-[#F8F8F2] capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
+            <div key={key} className="space-y-2 p-3 bg-muted rounded-lg">
+              <div className="text-sm font-medium text-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-[#9CA3AF]">🇫🇷 Français</label>
-                  <textarea value={value.fr} onChange={(e) => setTemplates((p) => ({ ...p, [key]: { ...p[key as keyof typeof p], fr: e.target.value } }))} className="w-full px-2 py-1.5 bg-[#111118] border border-white/5 rounded text-xs text-[#F8F8F2] resize-none" rows={3} />
+                  <label className="text-xs text-muted-foreground">🇫🇷 Français</label>
+                  <textarea value={value.fr} onChange={(e) => setTemplates((p) => ({ ...p, [key]: { ...p[key as keyof typeof p], fr: e.target.value } }))} className="w-full px-2 py-1.5 bg-background border border-border rounded text-xs text-foreground resize-none" rows={3} />
                 </div>
                 <div>
-                  <label className="text-xs text-[#9CA3AF]">🇸🇦 العربية</label>
-                  <textarea value={value.ar} dir="rtl" onChange={(e) => setTemplates((p) => ({ ...p, [key]: { ...p[key as keyof typeof p], ar: e.target.value } }))} className="w-full px-2 py-1.5 bg-[#111118] border border-white/5 rounded text-xs text-[#F8F8F2] resize-none" rows={3} />
+                  <label className="text-xs text-muted-foreground">🇸🇦 العربية</label>
+                  <textarea value={value.ar} dir="rtl" onChange={(e) => setTemplates((p) => ({ ...p, [key]: { ...p[key as keyof typeof p], ar: e.target.value } }))} className="w-full px-2 py-1.5 bg-background border border-border rounded text-xs text-foreground resize-none" rows={3} />
                 </div>
               </div>
             </div>
@@ -105,9 +105,9 @@ export default function GymSettings() {
       {/* Staff */}
       {activeTab === 'staff' && (
         <div className="card-gym space-y-4">
-          <h2 className="font-display text-xl text-[#F8F8F2] tracking-wider">Personnel</h2>
-          <p className="text-sm text-[#9CA3AF]">Gérez les comptes du personnel de votre salle de sport.</p>
-          <button className="px-4 py-2 bg-[#F97316] text-white text-sm rounded-lg hover:bg-[#EA580C] transition">+ Ajouter du personnel</button>
+          <h2 className="font-display text-xl text-foreground tracking-wider">Personnel</h2>
+          <p className="text-sm text-muted-foreground">Gérez les comptes du personnel de votre salle de sport.</p>
+          <button onClick={() => alert('Fonctionnalité à venir')} className="px-4 py-2 bg-brand-teal text-white text-sm rounded-lg hover:bg-brand-teal/90 transition">+ Ajouter du personnel</button>
         </div>
       )}
 
@@ -115,8 +115,8 @@ export default function GymSettings() {
       {activeTab === 'danger' && (
         <div className="card-gym border-[#EF4444]/30 space-y-4">
           <h2 className="font-display text-xl text-[#EF4444] tracking-wider">Zone de danger</h2>
-          <p className="text-sm text-[#9CA3AF]">Ces actions sont irréversibles.</p>
-          <button className="px-4 py-2 bg-[#EF4444] text-white text-sm rounded-lg hover:bg-[#DC2626] transition">Supprimer l'entreprise</button>
+          <p className="text-sm text-muted-foreground">Ces actions sont irréversibles.</p>
+          <button onClick={() => { if (confirm('Supprimer cette entreprise ? Cette action est irréversible.')) { alert('Fonctionnalité à venir'); } }} className="px-4 py-2 bg-[#EF4444] text-white text-sm rounded-lg hover:bg-[#DC2626] transition">Supprimer l'entreprise</button>
         </div>
       )}
     </div>
