@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
 import { BrandLogo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { NAV_LINKS } from "@/components/site/nav-config";
@@ -16,11 +16,16 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useActiveSection } from "@/hooks/use-active-section";
+import { useAuth } from "@/contexts/auth-context";
+import { useOrg } from "@/contexts/org-context";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
+  const { account, logout } = useAuth();
+  const { orgs, selectOrg } = useOrg();
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [showOrgs, setShowOrgs] = React.useState(false);
   const sectionIds = React.useMemo(
     () => NAV_LINKS.map((l) => l.href.replace("#", "")),
     [],
@@ -37,17 +42,17 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-300",
+        "sticky top-0 z-50 transition-all duration-300",
         scrolled
           ? "bg-background/80 backdrop-blur-xl border-b border-border/70 shadow-[0_8px_30px_-12px_rgba(0,95,107,0.18)]"
-          : "bg-transparent border-b border-transparent",
+          : "bg-background border-b border-transparent",
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 lg:h-18 items-center justify-between gap-4">
           {/* Logo */}
           <Link
-            href="#top"
+            href="/"
             className="flex items-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Organa home"
           >
@@ -91,23 +96,78 @@ export function SiteHeader() {
               FR · AR
             </div>
             <ThemeToggle />
-            <Button
-              asChild
-              variant="ghost"
-              className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button
-              asChild
-              size="sm"
-              className="hidden sm:inline-flex bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full shadow-brand"
-            >
-              <Link href="/signup">
-                Get started
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Link>
-            </Button>
+
+            {account ? (
+              /* Logged in: org switcher + user + logout */
+              <>
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowOrgs(!showOrgs)}
+                    className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground gap-1.5"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    {orgs.length > 0 ? `${orgs.length} entreprise${orgs.length > 1 ? 's' : ''}` : 'Mes entreprises'}
+                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showOrgs && "rotate-180")} />
+                  </Button>
+                  {showOrgs && (
+                    <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card shadow-lg p-2 z-50">
+                      {orgs.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">Aucune entreprise</div>
+                      ) : orgs.map((org) => (
+                        <button
+                          key={org.id}
+                          onClick={() => { selectOrg(org, true); setShowOrgs(false); }}
+                          className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 transition flex items-center gap-2"
+                        >
+                          <span className="font-medium truncate">{org.name}</span>
+                          <span className="text-xs text-muted-foreground ml-auto capitalize">{org.businessType}</span>
+                        </button>
+                      ))}
+                      <div className="my-1 h-px bg-border" />
+                      <Link
+                        href="/"
+                        onClick={() => setShowOrgs(false)}
+                        className="block px-3 py-2 text-sm text-brand-teal dark:text-brand-cyan hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 rounded-lg transition"
+                      >
+                        Gérer mes entreprises
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <span className="hidden sm:inline text-sm text-muted-foreground">{account.fullName || account.email}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={logout}
+                  className="hidden sm:inline-flex text-sm text-red-500 hover:text-red-500 hover:bg-red-500/10"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              /* Logged out: Sign in + Get started */
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground"
+                >
+                  <Link href="/login">Sign in</Link>
+                </Button>
+                <Button
+                  asChild
+                  size="sm"
+                  className="hidden sm:inline-flex bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full shadow-brand"
+                >
+                  <Link href="/signup">
+                    Get started
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </>
+            )}
 
             {/* Mobile menu */}
             <Sheet open={open} onOpenChange={setOpen}>
@@ -158,22 +218,50 @@ export function SiteHeader() {
                     <div className="my-4 h-px bg-border" />
 
                     <div className="space-y-2 px-2">
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="w-full rounded-full"
-                      >
-                        <Link href="/login">Sign in</Link>
-                      </Button>
-                      <Button
-                        asChild
-                        className="w-full rounded-full bg-brand-teal hover:bg-brand-teal/90 text-white"
-                      >
-                        <Link href="/signup">
-                          Get started
-                          <ArrowRight className="ml-1.5 h-4 w-4" />
-                        </Link>
-                      </Button>
+                      {account ? (
+                        <>
+                          <div className="px-3 py-2 text-sm font-medium">{account.fullName || account.email}</div>
+                          <div className="space-y-1">
+                            {orgs.map((org) => (
+                              <SheetClose asChild key={org.id}>
+                                <button
+                                  onClick={() => selectOrg(org, true)}
+                                  className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 transition"
+                                >
+                                  {org.name}
+                                </button>
+                              </SheetClose>
+                            ))}
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="w-full rounded-full text-red-500 border-red-500/20 hover:bg-red-500/10"
+                            onClick={() => { logout(); setOpen(false); }}
+                          >
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Déconnexion
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="w-full rounded-full"
+                          >
+                            <Link href="/login">Sign in</Link>
+                          </Button>
+                          <Button
+                            asChild
+                            className="w-full rounded-full bg-brand-teal hover:bg-brand-teal/90 text-white"
+                          >
+                            <Link href="/signup">
+                              Get started
+                              <ArrowRight className="ml-1.5 h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </>
+                      )}
                     </div>
 
                     <div className="mt-6 px-4 text-xs text-muted-foreground">
