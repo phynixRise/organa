@@ -1,47 +1,38 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useOrg } from '@/contexts/org-context';
 import { api } from '@/lib/api';
+import { getDashboardPath, getBizColor, GYM_TYPES, CAFE_TYPES } from '@/lib/constants';
 import {
-  Dumbbell, Store, Coffee, CreditCard, Users, BarChart3, Shield, Smartphone,
-  CheckCircle, ArrowRight, Phone, Mail, MapPin, Zap, Globe, Plus, Trash2,
-  LayoutDashboard, DollarSign, Settings, LogOut, Home, Star, Package,
-  ClipboardList, Edit2, X, Check, Eye, ChevronDown, ChevronRight
+  Dumbbell, Store, Coffee, Plus, Trash2,
+  LayoutDashboard, LogOut,
+  Edit2, X, Check, Eye, ChevronDown
 } from 'lucide-react';
-
-const GYM_TYPES = ['gym', 'fitness', 'salle_de_sport'];
-const BOUTIQUE_TYPES = ['boutique', 'tienda'];
-const CAFE_TYPES = ['cafe', 'restaurant'];
-
-function getDashboardPath(t: string) {
-  if (GYM_TYPES.includes(t)) return '/gym/dashboard';
-  if (BOUTIQUE_TYPES.includes(t)) return '/boutique/dashboard';
-  if (CAFE_TYPES.includes(t)) return '/cafe/dashboard';
-  return '/boutique/dashboard';
-}
+import { ScrollProgress } from '@/components/site/scroll-progress';
+import { SiteHeader } from '@/components/site/header';
+import { SiteFooter } from '@/components/site/footer';
+import { Hero } from '@/components/site/sections/hero';
+import { BusinessMarquee } from '@/components/site/sections/business-marquee';
+import { TrustBar } from '@/components/site/sections/trust-bar';
+import { ValueProps } from '@/components/site/sections/value-props';
+import { BusinessVerticals } from '@/components/site/sections/business-verticals';
+import { ModuleMatrix } from '@/components/site/sections/module-matrix';
+import { Comparison } from '@/components/site/sections/comparison';
+import { HowItWorks } from '@/components/site/sections/how-it-works';
+import { PlatformFeatures } from '@/components/site/sections/platform-features';
+import { Security } from '@/components/site/sections/security';
+import { Integrations } from '@/components/site/sections/integrations';
+import { Testimonials } from '@/components/site/sections/testimonials';
+import { Pricing } from '@/components/site/sections/pricing';
+import { Faq } from '@/components/site/sections/faq';
+import { CtaSection } from '@/components/site/sections/cta';
+import { BrandLogo } from '@/components/site/logo';
 
 function getBizIcon(t: string) { return GYM_TYPES.includes(t) ? Dumbbell : CAFE_TYPES.includes(t) ? Coffee : Store; }
-function getBizColor(t: string) { return GYM_TYPES.includes(t) ? '#F97316' : CAFE_TYPES.includes(t) ? '#22C55E' : '#3B82F6'; }
 function getBizLabel(t: string) { return GYM_TYPES.includes(t) ? 'Salle de sport' : CAFE_TYPES.includes(t) ? 'Café / Restaurant' : 'Boutique'; }
-
-const FEATURES = [
-  { icon: Globe, title: 'Multi-entreprise', desc: 'Gérez toutes vos entreprises depuis un seul compte.' },
-  { icon: CreditCard, title: 'Caisse intégrée', desc: 'POS avec code-barres, paiements espèces et cartes.' },
-  { icon: Users, title: 'Gestion des clients', desc: 'Base de données clients, historique, fidélisation.' },
-  { icon: BarChart3, title: 'Tableau de bord', desc: 'Revenus, ventes, graphiques en temps réel.' },
-  { icon: Shield, title: 'Isolation totale', desc: 'Chaque entreprise a ses propres données.' },
-  { icon: Smartphone, title: 'Responsive', desc: 'Sur ordinateur, tablette et téléphone.' },
-];
-
-const PLANS = [
-  { name: 'Starter', price: 29, features: ['1 entreprise', 'Caisse POS', 'Support email'], businesses: 1 },
-  { name: 'Pro', price: 59, features: ['3 entreprises', 'Tout inclus', 'Rapports', 'WhatsApp'], businesses: 3, highlighted: true },
-  { name: 'Business', price: 99, features: ['5+ entreprises', 'API', 'Support dédié', 'Personnalisé'], businesses: 5 },
-];
 
 interface BizStats { orders: number; revenue: number; customers: number; products: number; recentOrders: any[]; }
 
@@ -61,7 +52,7 @@ function BusinessCard({ org, onOpen, onDelete, onEdit }: {
     ]).then(([orders, products, customers]) => {
       const revenue = orders.reduce((s: number, o: any) => s + (o.totalMillimes || 0), 0);
       setStats({ orders: orders.length, revenue, customers: customers.length, products: products.length, recentOrders: orders.slice(-5).reverse() });
-    });
+    }).catch(() => {});
   }, [org.id]);
 
   const Icon = getBizIcon(org.businessType);
@@ -71,7 +62,6 @@ function BusinessCard({ org, onOpen, onDelete, onEdit }: {
 
   return (
     <div className="card-gym group hover:border-white/10 transition-all">
-      {/* Header */}
       <div className="flex items-center gap-4 mb-4">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
           <Icon className="w-7 h-7" style={{ color }} />
@@ -82,25 +72,24 @@ function BusinessCard({ org, onOpen, onDelete, onEdit }: {
               <input value={name} onChange={(e) => setName(e.target.value)}
                 className="flex-1 px-2 py-1 bg-[#0A0A0F] border border-white/10 rounded text-sm text-[#F8F8F2] focus:outline-none focus:ring-1 focus:ring-[#F97316]"
                 onKeyDown={(e) => e.key === 'Enter' && saveName()} autoFocus />
-              <button onClick={saveName} className="text-[#22C55E]"><Check className="w-4 h-4" /></button>
-              <button onClick={() => { setName(org.name); setEditing(false); }} className="text-[#EF4444]"><X className="w-4 h-4" /></button>
+              <button onClick={saveName} className="text-[#22C55E]" aria-label="Confirmer"><Check className="w-4 h-4" /></button>
+              <button onClick={() => { setName(org.name); setEditing(false); }} className="text-[#EF4444]" aria-label="Annuler"><X className="w-4 h-4" /></button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <div className="font-display text-xl text-[#F8F8F2] tracking-wider truncate">{org.name}</div>
-              <button onClick={() => setEditing(true)} className="text-[#6B7280] hover:text-[#F8F8F2] opacity-0 group-hover:opacity-100 transition">
+              <button onClick={() => setEditing(true)} className="text-[#6B7280] hover:text-[#F8F8F2] opacity-0 group-hover:opacity-100 transition" aria-label="Modifier le nom">
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
           <div className="text-sm text-[#9CA3AF]">{getBizLabel(org.businessType)}</div>
         </div>
-        <button onClick={onDelete} className="text-[#6B7280] hover:text-[#EF4444] opacity-0 group-hover:opacity-100 transition" title="Supprimer">
+        <button onClick={onDelete} className="text-[#6B7280] hover:text-[#EF4444] opacity-0 group-hover:opacity-100 transition" title="Supprimer" aria-label={`Supprimer ${org.name}`}>
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Stats */}
       {stats && (
         <div className="grid grid-cols-4 gap-2 mb-4">
           <div className="p-2 bg-[#0A0A0F] rounded-lg text-center">
@@ -122,7 +111,6 @@ function BusinessCard({ org, onOpen, onDelete, onEdit }: {
         </div>
       )}
 
-      {/* Expand recent orders */}
       <button onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between px-3 py-2 bg-[#0A0A0F] rounded-lg text-xs text-[#9CA3AF] hover:text-[#F8F8F2] transition mb-4">
         <span>Ventes récentes</span>
@@ -141,7 +129,6 @@ function BusinessCard({ org, onOpen, onDelete, onEdit }: {
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex gap-2">
         <button onClick={onOpen}
           className="flex-1 py-2.5 rounded-xl text-center font-medium text-sm transition flex items-center justify-center gap-2"
@@ -183,14 +170,14 @@ function BusinessManagerTab() {
     try {
       await api.delete(`/organizations/${org.id}`);
       await refreshOrgs();
-    } catch {}
+    } catch { /* handled by 401 interceptor */ }
   }
 
   async function handleEditName(org: any, newName: string) {
     try {
       await api.put(`/organizations/${org.id}`, { name: newName });
       await refreshOrgs();
-    } catch {}
+    } catch { /* handled by 401 interceptor */ }
   }
 
   function openBusiness(org: any) {
@@ -250,103 +237,10 @@ function BusinessManagerTab() {
   );
 }
 
-function DiscoverTab() {
-  return (
-    <div className="space-y-20">
-      {/* Hero */}
-      <section className="relative pt-8 pb-12 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F97316]/5 via-transparent to-transparent" />
-        <div className="max-w-4xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#F97316]/10 border border-[#F97316]/20 rounded-full text-[#F97316] text-sm mb-6">
-            <Star className="w-4 h-4" /> Plateforme #1 en Tunisie
-          </div>
-          <h1 className="font-display text-5xl sm:text-6xl text-[#F8F8F2] tracking-wider mb-4 leading-tight">
-            UNE SEULE PLATEFORME.<br /><span className="text-[#F97316]">TOUS VOS BUSINESSES.</span>
-          </h1>
-          <p className="text-lg text-[#9CA3AF] max-w-2xl mx-auto">Gérez votre café, boutique, salle de sport — tout depuis un seul compte.</p>
-        </div>
-      </section>
-
-      {/* Business Types */}
-      <section>
-        <h2 className="font-display text-3xl text-[#F8F8F2] tracking-wider text-center mb-10">Pour chaque activité</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { icon: Dumbbell, name: 'Salle de sport', desc: 'Membres, abonnements, présence', color: '#F97316' },
-            { icon: Coffee, name: 'Café / Restaurant', desc: 'Menu, commandes, tables', color: '#22C55E' },
-            { icon: Store, name: 'Boutique', desc: 'Produits, caisse, stock', color: '#3B82F6' },
-          ].map((v) => (
-            <div key={v.name} className="card-gym hover:border-white/10 transition">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: `${v.color}15` }}>
-                <v.icon className="w-7 h-7" style={{ color: v.color }} />
-              </div>
-              <h3 className="font-display text-xl text-[#F8F8F2] tracking-wider mb-2">{v.name}</h3>
-              <p className="text-sm text-[#9CA3AF]">{v.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Features */}
-      <section>
-        <h2 className="font-display text-3xl text-[#F8F8F2] tracking-wider text-center mb-10">Fonctionnalités</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="p-5 rounded-xl bg-[#111118] border border-white/5 hover:border-[#F97316]/20 transition">
-              <div className="w-10 h-10 bg-[#F97316]/10 rounded-xl flex items-center justify-center mb-3">
-                <f.icon className="w-5 h-5 text-[#F97316]" />
-              </div>
-              <h3 className="font-display text-lg text-[#F8F8F2] tracking-wider mb-1">{f.title}</h3>
-              <p className="text-sm text-[#9CA3AF]">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing">
-        <h2 className="font-display text-3xl text-[#F8F8F2] tracking-wider text-center mb-10">Tarifs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {PLANS.map((plan) => (
-            <div key={plan.name} className={`p-6 rounded-2xl border transition ${
-              plan.highlighted ? 'bg-[#111118] border-[#F97316]' : 'bg-[#111118] border-white/5 hover:border-white/10'
-            }`}>
-              {plan.highlighted && <div className="text-xs text-[#F97316] font-medium mb-2">Populaire</div>}
-              <h3 className="font-display text-xl text-[#F8F8F2] tracking-wider mb-1">{plan.name}</h3>
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-3xl font-bold text-[#F8F8F2]">{plan.price}</span>
-                <span className="text-sm text-[#9CA3AF]">TND/mois</span>
-              </div>
-              <ul className="space-y-2 mb-6">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-[#9CA3AF]">
-                    <CheckCircle className="w-3.5 h-3.5 text-[#22C55E] shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Contact */}
-      <section id="contact">
-        <h2 className="font-display text-3xl text-[#F8F8F2] tracking-wider text-center mb-10">Contact</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-          <div className="card-gym text-center py-6"><Phone className="w-6 h-6 text-[#F97316] mx-auto mb-3" /><div className="text-sm text-[#F8F8F2]">+216 XX XXX XXX</div></div>
-          <div className="card-gym text-center py-6"><Mail className="w-6 h-6 text-[#22C55E] mx-auto mb-3" /><div className="text-sm text-[#F8F8F2]">contact@organa.tn</div></div>
-          <div className="card-gym text-center py-6"><MapPin className="w-6 h-6 text-[#3B82F6] mx-auto mb-3" /><div className="text-sm text-[#F8F8F2]">Tunis, Tunisie</div></div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
 export default function RootPage() {
   const { account, loading: authLoading, logout } = useAuth();
   const { loading: orgLoading } = useOrg();
   const [tab, setTab] = useState<'discover' | 'businesses'>('discover');
-  const router = useRouter();
 
   useEffect(() => { if (account) setTab('businesses'); }, [account]);
 
@@ -354,37 +248,42 @@ export default function RootPage() {
     return <div className="flex items-center justify-center min-h-screen bg-[#0A0A0F]"><div className="text-[#9CA3AF]">Chargement...</div></div>;
   }
 
-  // Not logged in → marketing site
   if (!account) {
     return (
-      <div className="min-h-screen bg-[#0A0A0F]">
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0F]/90 backdrop-blur-md border-b border-white/5">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center"><Zap className="w-5 h-5 text-white" /></div>
-              <span className="font-display text-2xl text-[#F8F8F2] tracking-wider">ORGANA</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link href="/login" className="px-4 py-2 text-sm text-[#9CA3AF] hover:text-[#F8F8F2] transition">Connexion</Link>
-              <Link href="/signup" className="px-4 py-2 bg-[#F97316] text-white text-sm rounded-lg hover:bg-[#EA580C] transition font-medium">Commencer</Link>
-            </div>
-          </div>
-        </nav>
-        <div className="pt-24"><DiscoverTab /></div>
+      <div className="relative min-h-screen flex flex-col bg-background">
+        <ScrollProgress />
+        <SiteHeader />
+        <main className="flex-1">
+          <Hero />
+          <BusinessMarquee />
+          <TrustBar />
+          <ValueProps />
+          <BusinessVerticals />
+          <ModuleMatrix />
+          <Comparison />
+          <HowItWorks />
+          <PlatformFeatures />
+          <Security />
+          <Integrations />
+          <Testimonials />
+          <Pricing />
+          <Faq />
+          <CtaSection />
+        </main>
+        <SiteFooter />
       </div>
     );
   }
 
-  // Logged in → tabbed main page
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
       <nav className="border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center"><Zap className="w-4 h-4 text-white" /></div>
+            <Link href="/" className="flex items-center gap-3">
+              <BrandLogo size={28} withWordmark={false} />
               <span className="font-display text-xl text-[#F8F8F2] tracking-wider">ORGANA</span>
-            </div>
+            </Link>
             <div className="h-6 w-px bg-white/10" />
             <div className="flex gap-1">
               <button onClick={() => setTab('discover')}
@@ -399,7 +298,7 @@ export default function RootPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-[#9CA3AF]">{account.fullName || account.email}</span>
-            <button onClick={logout} className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg transition">
+            <button onClick={logout} className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg transition" aria-label="Déconnexion">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
@@ -407,7 +306,18 @@ export default function RootPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {tab === 'discover' ? <DiscoverTab /> : <BusinessManagerTab />}
+        {tab === 'discover' ? (
+          <div className="space-y-20">
+            <div className="text-center">
+              <h1 className="font-display text-4xl text-[#F8F8F2] tracking-wider mb-2">Découvrir Organa</h1>
+              <p className="text-[#9CA3AF]">La plateforme pour toutes vos entreprises</p>
+            </div>
+            <Pricing />
+            <Faq />
+          </div>
+        ) : (
+          <BusinessManagerTab />
+        )}
       </main>
     </div>
   );
