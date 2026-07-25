@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/site/logo';
 import { ScrollProgress } from '@/components/site/scroll-progress';
+import { ALL_BUSINESS_TYPES } from '@/lib/constants';
 import Link from 'next/link';
 
 export default function SignupPage() {
@@ -70,9 +71,9 @@ export default function SignupPage() {
               <label className="block text-sm font-medium text-muted-foreground mb-1">Type d&apos;activité</label>
               <select value={form.businessType} onChange={(e) => update('businessType', e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/50">
-                <option value="gym">Salle de sport</option>
-                <option value="cafe">Café / Restaurant</option>
-                <option value="boutique">Boutique</option>
+                {ALL_BUSINESS_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
               </select>
             </div>
             <button type="submit" disabled={loading}

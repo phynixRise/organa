@@ -4,6 +4,7 @@ import { ReactNode, useRef, useEffect } from 'react';
 import { AuthProvider, setOrgRefreshHandler } from '@/contexts/auth-context';
 import { OrgProvider, useOrg } from '@/contexts/org-context';
 import { ThemeProvider } from '@/components/site/theme-provider';
+import { I18nProvider } from '@/i18n';
 
 function OrgBridge() {
   const { refreshOrgs } = useOrg();
@@ -25,12 +26,14 @@ export function Providers({ children }: { children: ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      <AuthProvider>
-        <OrgProvider>
-          <OrgBridge />
-          {children}
-        </OrgProvider>
-      </AuthProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <OrgProvider>
+            <OrgBridge />
+            {children}
+          </OrgProvider>
+        </AuthProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }

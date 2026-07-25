@@ -144,7 +144,7 @@ export default function GymSubscriptions() {
     saveSubs(selectedOrg.id, updated);
   }
 
-  if (!selectedOrg) return <div className="text-center py-12 text-[#9CA3AF]">Sélectionnez une entreprise</div>;
+  if (!selectedOrg) return <div className="text-center py-12 text-muted-foreground">Sélectionnez une entreprise</div>;
 
   const stats = {
     active: subs.filter((s) => s.status === 'active').length,
@@ -155,8 +155,8 @@ export default function GymSubscriptions() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-[#F8F8F2] tracking-wider">Abonnements</h1>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2.5 bg-[#F97316] text-white rounded-lg text-sm font-medium hover:bg-[#EA580C] transition">
+        <h1 className="font-display text-3xl text-foreground tracking-wider">Abonnements</h1>
+        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2.5 bg-brand-teal text-white rounded-lg text-sm font-medium hover:bg-brand-teal/90 transition">
           <Plus className="w-4 h-4" />{showForm ? 'Annuler' : 'Nouvel abonnement'}
         </button>
       </div>
@@ -165,18 +165,18 @@ export default function GymSubscriptions() {
       <div className="grid grid-cols-3 gap-3">
         <div className="card-gym text-center">
           <CheckCircle className="w-5 h-5 text-[#22C55E] mx-auto mb-1" />
-          <div className="font-display text-2xl text-[#F8F8F2]">{stats.active}</div>
-          <div className="text-xs text-[#9CA3AF]">Actifs</div>
+          <div className="font-display text-2xl text-foreground">{stats.active}</div>
+          <div className="text-xs text-muted-foreground">Actifs</div>
         </div>
         <div className="card-gym text-center">
-          <Snowflake className="w-5 h-5 text-[#3B82F6] mx-auto mb-1" />
-          <div className="font-display text-2xl text-[#F8F8F2]">{stats.frozen}</div>
-          <div className="text-xs text-[#9CA3AF]">Gelés</div>
+          <Snowflake className="w-5 h-5 text-brand-teal dark:text-brand-cyan mx-auto mb-1" />
+          <div className="font-display text-2xl text-foreground">{stats.frozen}</div>
+          <div className="text-xs text-muted-foreground">Gelés</div>
         </div>
         <div className="card-gym text-center">
           <XCircle className="w-5 h-5 text-[#EF4444] mx-auto mb-1" />
-          <div className="font-display text-2xl text-[#F8F8F2]">{stats.expired}</div>
-          <div className="text-xs text-[#9CA3AF]">Expirés</div>
+          <div className="font-display text-2xl text-foreground">{stats.expired}</div>
+          <div className="text-xs text-muted-foreground">Expirés</div>
         </div>
       </div>
 
@@ -185,43 +185,43 @@ export default function GymSubscriptions() {
         <form onSubmit={handleCreate} className="card-gym space-y-3">
           {error && <div className="text-sm text-[#EF4444] bg-[#EF4444]/10 p-2 rounded-lg">{error}</div>}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <select value={form.memberId} onChange={(e) => setForm((p) => ({ ...p, memberId: e.target.value }))} className="px-3 py-2 bg-[#1C1C27] border border-white/5 rounded-lg text-sm text-[#F8F8F2]" required>
+            <select value={form.memberId} onChange={(e) => setForm((p) => ({ ...p, memberId: e.target.value }))} className="px-3 py-2 bg-muted border border-border rounded-lg text-sm text-foreground" required>
               <option value="">Membre</option>
               {customers.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-            <select value={form.planIndex} onChange={(e) => setForm((p) => ({ ...p, planIndex: e.target.value }))} className="px-3 py-2 bg-[#1C1C27] border border-white/5 rounded-lg text-sm text-[#F8F8F2]">
+            <select value={form.planIndex} onChange={(e) => setForm((p) => ({ ...p, planIndex: e.target.value }))} className="px-3 py-2 bg-muted border border-border rounded-lg text-sm text-foreground">
               {PLANS.map((p, i) => <option key={i} value={i}>{p.name} — {p.price} TND</option>)}
             </select>
           </div>
-          <button type="submit" className="px-4 py-2 bg-[#F97316] text-white text-sm rounded-lg hover:bg-[#EA580C] transition">Créer</button>
+          <button type="submit" className="px-4 py-2 bg-brand-teal text-white text-sm rounded-lg hover:bg-brand-teal/90 transition">Créer</button>
         </form>
       )}
 
       {/* Subscriptions list */}
       <div className="space-y-2">
-        {loading ? <div className="text-center py-12 text-[#9CA3AF]">Chargement...</div> : subs.length === 0 ? <div className="text-center py-12 text-[#9CA3AF]">Aucun abonnement</div> :
+        {loading ? <div className="text-center py-12 text-muted-foreground">Chargement...</div> : subs.length === 0 ? <div className="text-center py-12 text-muted-foreground">Aucun abonnement</div> :
           subs.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((s) => {
             const daysLeft = getDaysRemaining(s.endDate);
             const isExpiringSoon = s.status === 'active' && daysLeft >= 0 && daysLeft <= 7;
             return (
-              <div key={s.id} className={`card-gym ${isExpiringSoon ? 'border-[#EAB308]/30' : s.status === 'frozen' ? 'border-[#3B82F6]/30' : ''}`}>
+              <div key={s.id} className={`card-gym ${isExpiringSoon ? 'border-[#EAB308]/30' : s.status === 'frozen' ? 'border-brand-teal/30 dark:border-brand-cyan/30' : ''}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      s.status === 'active' ? 'bg-[#22C55E]/10' : s.status === 'frozen' ? 'bg-[#3B82F6]/10' : 'bg-[#EF4444]/10'
+                      s.status === 'active' ? 'bg-[#22C55E]/10' : s.status === 'frozen' ? 'bg-brand-teal/10 dark:bg-brand-cyan/10' : 'bg-[#EF4444]/10'
                     }`}>
                       {s.status === 'active' ? <CheckCircle className="w-5 h-5 text-[#22C55E]" /> :
-                       s.status === 'frozen' ? <Snowflake className="w-5 h-5 text-[#3B82F6]" /> :
+                       s.status === 'frozen' ? <Snowflake className="w-5 h-5 text-brand-teal dark:text-brand-cyan" /> :
                        <XCircle className="w-5 h-5 text-[#EF4444]" />}
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-[#F8F8F2]">{s.memberName}</div>
-                      <div className="text-xs text-[#9CA3AF]">{s.planName} — {(s.amountMillimes / 1000).toFixed(3)} TND</div>
+                      <div className="text-sm font-medium text-foreground">{s.memberName}</div>
+                      <div className="text-xs text-muted-foreground">{s.planName} — {(s.amountMillimes / 1000).toFixed(3)} TND</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <div className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
                         {new Date(s.startDate).toLocaleDateString('fr')} → {new Date(s.endDate).toLocaleDateString('fr')}
                       </div>
@@ -231,12 +231,12 @@ export default function GymSubscriptions() {
                         </div>
                       )}
                       {s.status === 'frozen' && (
-                        <div className="text-xs text-[#3B82F6] mt-0.5">Gelé {s.frozenDays}j</div>
+                        <div className="text-xs text-brand-teal dark:text-brand-cyan mt-0.5">Gelé {s.frozenDays}j</div>
                       )}
                     </div>
                     <div className="flex gap-1">
                       {s.status === 'active' && (
-                        <button onClick={() => handleFreeze(s.id)} className="p-1.5 bg-[#3B82F6]/10 text-[#3B82F6] rounded-lg hover:bg-[#3B82F6]/20 transition" title="Geler 7 jours">
+                        <button onClick={() => handleFreeze(s.id)} className="p-1.5 bg-brand-teal/10 text-brand-teal dark:text-brand-cyan rounded-lg hover:bg-brand-teal/20 dark:hover:bg-brand-cyan/20 transition" title="Geler 7 jours">
                           <Snowflake className="w-4 h-4" />
                         </button>
                       )}

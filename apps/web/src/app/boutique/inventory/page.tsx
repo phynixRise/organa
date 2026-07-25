@@ -33,13 +33,13 @@ export default function BoutiqueInventory() {
   const lowStock = products.filter((p) => p.stockQuantity !== null && p.stockQuantity !== undefined && p.stockQuantity <= 5);
   const inStock = products.filter((p) => p.stockQuantity !== null && p.stockQuantity !== undefined && p.stockQuantity > 5);
 
-  if (!selectedOrg) return <div className="text-center py-12 text-[#9CA3AF]">Sélectionnez une entreprise</div>;
+  if (!selectedOrg) return <div className="text-center py-12 text-muted-foreground">Sélectionnez une entreprise</div>;
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl text-[#F8F8F2] tracking-wider">Stock</h1>
+      <h1 className="font-display text-3xl text-foreground tracking-wider">Stock</h1>
 
-      {loading ? <div className="text-center py-12 text-[#9CA3AF]">Chargement...</div> : (
+      {loading ? <div className="text-center py-12 text-muted-foreground">Chargement...</div> : (
         <>
           {lowStock.length > 0 && (
             <div className="space-y-3">
@@ -51,8 +51,8 @@ export default function BoutiqueInventory() {
                   <div className="flex items-center gap-3">
                     <Package className="w-5 h-5 text-[#EAB308]" />
                     <div>
-                      <div className="text-sm font-medium text-[#F8F8F2]">{p.name}</div>
-                      <div className="text-xs text-[#9CA3AF]">{p.sku || '—'}</div>
+                      <div className="text-sm font-medium text-foreground">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">{p.sku || '—'}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -68,15 +68,15 @@ export default function BoutiqueInventory() {
           )}
 
           <div className="space-y-3">
-            <h2 className="font-display text-xl text-[#F8F8F2] tracking-wider">Tous les articles ({inStock.length + lowStock.length})</h2>
+            <h2 className="font-display text-xl text-foreground tracking-wider">Tous les articles ({inStock.length + lowStock.length})</h2>
             <div className="space-y-2">
               {products.map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-3 bg-[#1C1C27] rounded-lg">
+                <div key={p.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
                     <Package className="w-4 h-4 text-[#3B82F6]" />
                     <div>
-                      <div className="text-sm text-[#F8F8F2]">{p.name}</div>
-                      <div className="text-xs text-[#9CA3AF]">{(p.priceMillimes / 1000).toFixed(3)} TND</div>
+                      <div className="text-sm text-foreground">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">{(p.priceMillimes / 1000).toFixed(3)} TND</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -84,13 +84,13 @@ export default function BoutiqueInventory() {
                       {p.stockQuantity ?? '—'}
                     </span>
                     <div className="flex gap-1">
-                      <button onClick={() => updateStock(p.id, -1)} className="p-1 bg-[#111118] rounded text-[#9CA3AF] hover:text-[#EF4444] transition"><Minus className="w-3 h-3" /></button>
-                      <button onClick={() => updateStock(p.id, 1)} className="p-1 bg-[#111118] rounded text-[#9CA3AF] hover:text-[#22C55E] transition"><Plus className="w-3 h-3" /></button>
+                      <button onClick={() => updateStock(p.id, -1)} className="p-1 bg-card rounded text-muted-foreground hover:text-red-500 transition"><Minus className="w-3 h-3" /></button>
+                      <button onClick={() => updateStock(p.id, 1)} className="p-1 bg-card rounded text-muted-foreground hover:text-green-500 transition"><Plus className="w-3 h-3" /></button>
                     </div>
                   </div>
                 </div>
               ))}
-              {products.length === 0 && <div className="text-center py-8 text-[#9CA3AF]">Aucun article</div>}
+              {products.length === 0 && <div className="text-center py-8 text-muted-foreground">Aucun article</div>}
             </div>
           </div>
         </>

@@ -9,13 +9,13 @@ import { Input } from "@/components/ui/input";
 
 const FOOTER_COLUMNS = [
   {
-    title: "Platform",
+    title: "Plateforme",
     links: [
-      { label: "Overview", href: "#platform" },
+      { label: "Fonctionnalités", href: "#features" },
       { label: "Verticals", href: "#verticals" },
-      { label: "How it works", href: "#how-it-works" },
-      { label: "Pricing", href: "#pricing" },
-      { label: "Security", href: "#security" },
+      { label: "Comment ça marche", href: "#how-it-works" },
+      { label: "Tarifs", href: "#pricing" },
+      { label: "FAQ", href: "#faq" },
     ],
   },
   {
@@ -26,26 +26,6 @@ const FOOTER_COLUMNS = [
       { label: "Boutique", href: "#verticals" },
       { label: "Gym", href: "#verticals" },
       { label: "Cabinet médical", href: "#verticals" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "#about" },
-      { label: "Careers", href: "#careers" },
-      { label: "Press kit", href: "#press" },
-      { label: "Contact", href: "#contact" },
-      { label: "Status", href: "#status" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Documentation", href: "#docs" },
-      { label: "API reference", href: "#api" },
-      { label: "Changelog", href: "#changelog" },
-      { label: "Community", href: "#community" },
-      { label: "Support", href: "#support" },
     ],
   },
 ];
@@ -69,11 +49,11 @@ export function SiteFooter() {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 py-12 lg:py-16 border-b border-border">
           <div>
             <h3 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">
-              Get Organa updates, the Tunisian way.
+              Restez informé des mises à jour Organa.
             </h3>
             <p className="mt-2 text-muted-foreground max-w-md">
-              New verticals, Konnect payment tips, and product news — once a
-              month, no spam. We respect your inbox like we respect the Dinar.
+              Nouveaux verticals, conseils de paiement et actualités produit — une fois par
+              mois, pas de spam.
             </p>
           </div>
           <div className="flex flex-col justify-center">
@@ -96,12 +76,12 @@ export function SiteFooter() {
                 type="submit"
                 className="h-12 rounded-full px-6 bg-brand-teal hover:bg-brand-teal/90 text-white shadow-brand"
               >
-                {sent ? "Subscribed ✓" : "Subscribe"}
+                {sent ? "Inscrit ✓" : "S'abonner"}
                 {!sent && <Send className="ml-2 h-4 w-4" />}
               </Button>
             </form>
             <p className="mt-2 text-xs text-muted-foreground">
-              By subscribing you agree to our privacy policy.
+              En vous abonnant, vous acceptez notre politique de confidentialité.
             </p>
           </div>
         </div>
@@ -111,8 +91,8 @@ export function SiteFooter() {
           <div>
             <BrandLogo size={34} />
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-              One platform, rented to business owners. Run café, restaurant,
-              boutique, gym, cabinet médical and tienda from a single login.
+              Une plateforme unique pour les entrepreneurs tunisiens. Gérez café,
+              restaurant, boutique, salle de sport, cabinet médical et tienda depuis un seul login.
             </p>
             <div className="mt-5 flex items-center gap-2">
               {[
@@ -158,15 +138,15 @@ export function SiteFooter() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6 border-t border-border">
           <p className="text-xs text-muted-foreground text-center sm:text-left">
-            © {new Date().getFullYear()} Organa. Made in Tunisia 🇹🇳 — prices in
-            TND. INPDP declaration pending.
+            © {new Date().getFullYear()} Organa. Fait en Tunisie 🇹🇳 — prix en
+            DT. Déclaration INPDP en cours.
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <Link href="#privacy" className="hover:text-brand-teal">
-              Privacy
+              Confidentialité
             </Link>
             <Link href="#terms" className="hover:text-brand-teal">
-              Terms
+              Conditions
             </Link>
             <Link href="#dpa" className="hover:text-brand-teal">
               DPA
@@ -175,7 +155,7 @@ export function SiteFooter() {
               href="/signup"
               className="inline-flex items-center gap-1 font-medium text-brand-teal hover:text-brand-cyan"
             >
-              Get started
+              S'inscrire
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>

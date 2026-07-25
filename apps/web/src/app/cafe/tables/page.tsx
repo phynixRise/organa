@@ -30,18 +30,18 @@ export default function CafeTables() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl text-[#F8F8F2] tracking-wider">Tables</h1>
+      <h1 className="font-display text-3xl text-foreground tracking-wider">Tables</h1>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="card-gym text-center">
-          <Coffee className="w-5 h-5 text-[#22C55E] mx-auto mb-1" />
-          <div className="font-display text-2xl text-[#F8F8F2]">{freeCount}</div>
-          <div className="text-xs text-[#9CA3AF]">Libres</div>
+          <Coffee className="w-5 h-5 text-[green-500] mx-auto mb-1" />
+          <div className="font-display text-2xl text-foreground">{freeCount}</div>
+          <div className="text-xs text-muted-foreground">Libres</div>
         </div>
         <div className="card-gym text-center">
-          <Users className="w-5 h-5 text-[#EF4444] mx-auto mb-1" />
-          <div className="font-display text-2xl text-[#F8F8F2]">{occupiedCount}</div>
-          <div className="text-xs text-[#9CA3AF]">Occupées</div>
+          <Users className="w-5 h-5 text-[red-500] mx-auto mb-1" />
+          <div className="font-display text-2xl text-foreground">{occupiedCount}</div>
+          <div className="text-xs text-muted-foreground">Occupées</div>
         </div>
       </div>
 
@@ -50,16 +50,16 @@ export default function CafeTables() {
           <button key={t.id} onClick={() => toggleStatus(t.id)}
             className={`p-6 rounded-2xl border-2 transition-all text-center ${
               t.status === 'free'
-                ? 'bg-[#22C55E]/5 border-[#22C55E]/30 hover:border-[#22C55E]'
-                : 'bg-[#EF4444]/5 border-[#EF4444]/30 hover:border-[#EF4444]'
+                ? 'bg-[green-500]/5 border-[green-500]/30 hover:border-[green-500]'
+                : 'bg-[red-500]/5 border-[red-500]/30 hover:border-[red-500]'
             }`}>
             <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${
-              t.status === 'free' ? 'bg-[#22C55E]/10' : 'bg-[#EF4444]/10'
+              t.status === 'free' ? 'bg-[green-500]/10' : 'bg-[red-500]/10'
             }`}>
-              {t.status === 'free' ? <CheckCircle className="w-6 h-6 text-[#22C55E]" /> : <Clock className="w-6 h-6 text-[#EF4444]" />}
+              {t.status === 'free' ? <CheckCircle className="w-6 h-6 text-[green-500]" /> : <Clock className="w-6 h-6 text-[red-500]" />}
             </div>
-            <div className="font-display text-xl text-[#F8F8F2] tracking-wider mb-1">{t.name}</div>
-            <div className={`text-xs font-medium ${t.status === 'free' ? 'text-[#22C55E]' : 'text-[#EF4444]'}`}>
+            <div className="font-display text-xl text-foreground tracking-wider mb-1">{t.name}</div>
+            <div className={`text-xs font-medium ${t.status === 'free' ? 'text-[green-500]' : 'text-[red-500]'}`}>
               {t.status === 'free' ? 'Libre' : 'Occupée'}
             </div>
           </button>

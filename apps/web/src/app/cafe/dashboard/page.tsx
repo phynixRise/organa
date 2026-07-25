@@ -40,10 +40,10 @@ export default function CafeDashboard() {
   if (loading) return <div className="text-center py-12 text-muted-foreground">Chargement...</div>;
 
   const statCards = [
-    { label: 'Commandes', value: stats.orders, icon: ClipboardList, color: 'text-[#22C55E]' },
+    { label: 'Commandes', value: stats.orders, icon: ClipboardList, color: 'text-green-500' },
     { label: 'Revenu total', value: `${(stats.revenue / 1000).toFixed(3)} TND`, icon: DollarSign, color: 'text-brand-teal dark:text-brand-cyan' },
-    { label: 'Articles menu', value: stats.products, icon: Package, color: 'text-[#3B82F6]' },
-    { label: 'Clients', value: stats.customers, icon: Users, color: 'text-[#22C55E]' },
+    { label: 'Articles menu', value: stats.products, icon: Package, color: 'text-blue-500' },
+    { label: 'Clients', value: stats.customers, icon: Users, color: 'text-green-500' },
   ];
 
   return (
@@ -67,7 +67,7 @@ export default function CafeDashboard() {
 
       <div className="card-gym">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-[#22C55E]" />
+          <TrendingUp className="w-5 h-5 text-green-500" />
           <h2 className="font-display text-xl text-foreground tracking-wider">Revenus</h2>
         </div>
         <div className="h-[250px]">
@@ -76,7 +76,7 @@ export default function CafeDashboard() {
               <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '10px', color: 'hsl(var(--foreground))' }} />
-              <Bar dataKey="revenue" fill="#22C55E" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="hsl(var(--green-500))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -96,7 +96,7 @@ export default function CafeDashboard() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium text-foreground">{(o.totalMillimes / 1000).toFixed(3)} TND</div>
-                  <span className={`text-xs px-2 py-0.5 rounded ${o.status === 'completed' ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-[#EAB308]/10 text-[#EAB308]'}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded ${o.status === 'completed' ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
                     {o.status === 'completed' ? 'Payé' : 'En attente'}
                   </span>
                 </div>

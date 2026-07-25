@@ -43,9 +43,9 @@ export default function BoutiqueDashboard() {
 
   const statCards = [
     { label: 'Ventes', value: stats.orders, icon: ShoppingBag, color: 'text-brand-teal' },
-    { label: 'Revenu total', value: `${(stats.revenue / 1000).toFixed(3)} TND`, icon: DollarSign, color: 'text-[#22C55E]' },
+    { label: 'Revenu total', value: `${(stats.revenue / 1000).toFixed(3)} TND`, icon: DollarSign, color: 'text-green-500' },
     { label: 'Articles', value: stats.products, icon: Package, color: 'text-brand-teal' },
-    { label: 'Clients', value: stats.customers, icon: Users, color: 'text-[#F97316]' },
+    { label: 'Clients', value: stats.customers, icon: Users, color: 'text-orange-500' },
   ];
 
   return (
@@ -115,7 +115,7 @@ export default function BoutiqueDashboard() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium text-foreground">{(o.totalMillimes / 1000).toFixed(3)} TND</div>
-                  <span className={`text-xs px-2 py-0.5 rounded ${o.status === 'completed' ? 'bg-[#22C55E]/10 text-[#22C55E]' : 'bg-[#EAB308]/10 text-[#EAB308]'}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded ${o.status === 'completed' ? 'bg-green-500/10 text-green-500' : 'bg-[#EAB308]/10 text-[#EAB308]'}`}>
                     {o.status === 'completed' ? 'Payé' : 'En attente'}
                   </span>
                 </div>

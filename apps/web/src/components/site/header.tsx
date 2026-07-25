@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Menu, X, ArrowRight, LogOut, LayoutDashboard, User } from "lucide-react";
 import { BrandLogo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -143,10 +144,7 @@ export function SiteHeader({ activeTab, onTabChange }: { activeTab?: string; onT
 
           {/* Right actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <div className="hidden md:flex items-center gap-1 mr-1 text-xs font-medium text-muted-foreground border border-border rounded-full px-2.5 py-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pulse" />
-              FR · AR
-            </div>
+            <LanguageSwitcher />
             <ThemeToggle />
 
             {!account && (
@@ -156,7 +154,7 @@ export function SiteHeader({ activeTab, onTabChange }: { activeTab?: string; onT
                   variant="ghost"
                   className="hidden sm:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  <Link href="/login">Sign in</Link>
+                  <Link href="/login">Se connecter</Link>
                 </Button>
                 <Button
                   asChild
@@ -164,7 +162,7 @@ export function SiteHeader({ activeTab, onTabChange }: { activeTab?: string; onT
                   className="hidden sm:inline-flex bg-brand-teal hover:bg-brand-teal/90 text-white rounded-full shadow-brand"
                 >
                   <Link href="/signup">
-                    Get started
+                    S'inscrire
                     <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                   </Link>
                 </Button>
@@ -198,17 +196,23 @@ export function SiteHeader({ activeTab, onTabChange }: { activeTab?: string; onT
                         </Link>
                       </SheetClose>
                       <SheetClose asChild>
-                        <Link href={account ? "#businesses" : "/login"} className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-foreground hover:bg-brand-teal-soft/60 dark:hover:bg-brand-teal-soft/20">
+                        <button
+                          onClick={() => { setOpen(false); onTabChange?.('businesses'); }}
+                          className="w-full flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-foreground hover:bg-brand-teal-soft/60 dark:hover:bg-brand-teal-soft/20"
+                        >
                           Mes entreprises
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
+                        </button>
                       </SheetClose>
                       {account && (
                         <SheetClose asChild>
-                          <Link href="#profile" className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-foreground hover:bg-brand-teal-soft/60 dark:hover:bg-brand-teal-soft/20">
+                          <button
+                            onClick={() => { setOpen(false); setShowProfile(true); }}
+                            className="w-full flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-foreground hover:bg-brand-teal-soft/60 dark:hover:bg-brand-teal-soft/20"
+                          >
                             Profile
                             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                          </Link>
+                          </button>
                         </SheetClose>
                       )}
                     </div>
@@ -228,11 +232,11 @@ export function SiteHeader({ activeTab, onTabChange }: { activeTab?: string; onT
                       ) : (
                         <>
                           <Button asChild variant="outline" className="w-full rounded-full">
-                            <Link href="/login">Sign in</Link>
+                            <Link href="/login">Se connecter</Link>
                           </Button>
                           <Button asChild className="w-full rounded-full bg-brand-teal hover:bg-brand-teal/90 text-white">
                             <Link href="/signup">
-                              Get started
+                              S'inscrire
                               <ArrowRight className="ml-1.5 h-4 w-4" />
                             </Link>
                           </Button>
@@ -240,16 +244,8 @@ export function SiteHeader({ activeTab, onTabChange }: { activeTab?: string; onT
                       )}
                     </div>
 
-                    <div className="mt-6 px-4 text-xs text-muted-foreground">
-                      <p className="font-medium text-foreground">Langue</p>
-                      <div className="mt-2 flex gap-2">
-                        <span className="rounded-full border border-brand-cyan/40 bg-brand-cyan-soft/60 px-3 py-1 text-xs font-semibold text-brand-teal">
-                          Français
-                        </span>
-                        <span className="rounded-full border border-border px-3 py-1 text-xs font-medium">
-                          العربية
-                        </span>
-                      </div>
+                    <div className="mt-6 px-4">
+                      <LanguageSwitcher />
                     </div>
                   </nav>
                 </div>

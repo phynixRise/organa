@@ -156,7 +156,7 @@ export default function GymDashboard() {
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium text-foreground">{(o.totalMillimes / 1000).toFixed(3)} TND</div>
-                  <span className={`text-xs px-2 py-0.5 rounded ${o.status === 'completed' ? 'bg-[#22C55E]/10 text-[#22C55E]' : o.status === 'open' ? 'bg-[#3B82F6]/10 text-[#3B82F6]' : 'bg-[#6B7280]/10 text-[#6B7280]'}`}>
+                   <span className={`text-xs px-2 py-0.5 rounded ${o.status === 'completed' ? 'bg-green-500/10 text-green-500' : o.status === 'open' ? 'bg-blue-500/10 text-blue-500' : 'bg-muted text-muted-foreground'}`}>
                     {o.status === 'completed' ? 'Payé' : o.status === 'open' ? 'En attente' : o.status}
                   </span>
                 </div>

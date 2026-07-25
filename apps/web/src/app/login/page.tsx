@@ -48,7 +48,12 @@ export default function LoginPage() {
                 placeholder="votre@email.com" />
             </div>
             <div>
-              <label htmlFor="login-password" className="block text-sm font-medium text-muted-foreground mb-1">Mot de passe</label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="login-password" className="block text-sm font-medium text-muted-foreground">Mot de passe</label>
+                <Link href="/forgot-password" className="text-xs text-brand-teal dark:text-brand-cyan hover:underline">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <input id="login-password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
                 placeholder="••••••••" />
