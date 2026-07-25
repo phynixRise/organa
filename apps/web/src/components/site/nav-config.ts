@@ -4,12 +4,8 @@ export type NavLink = {
 };
 
 export const NAV_LINKS: NavLink[] = [
-  { label: "Platform", href: "#platform" },
-  { label: "Verticals", href: "#verticals" },
-  { label: "Modules", href: "#modules" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Découvrir", href: "#top" },
+  { label: "Mes entreprises", href: "#businesses" },
 ];
 
 export type Vertical = {

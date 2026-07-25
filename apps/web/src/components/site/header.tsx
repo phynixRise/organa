@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Menu, X, ArrowRight, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
+import { Menu, X, ArrowRight, LogOut, LayoutDashboard, ChevronDown, User } from "lucide-react";
 import { BrandLogo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { NAV_LINKS } from "@/components/site/nav-config";
@@ -59,14 +59,15 @@ export function SiteHeader() {
             <BrandLogo size={34} />
           </Link>
 
-          {/* Desktop nav */}
+          {/* Desktop nav — 3 tabs */}
           <nav className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((link) => {
               const isActive = active === link.href.replace("#", "");
+              const isEntreprises = link.href === "#businesses";
               return (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  href={isEntreprises && !account ? "/login" : link.href}
                   aria-current={isActive ? "true" : undefined}
                   className={cn(
                     "relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors",
@@ -87,6 +88,18 @@ export function SiteHeader() {
                 </Link>
               );
             })}
+            {account && (
+              <Link
+                href="#profile"
+                className={cn(
+                  "relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors",
+                  "text-muted-foreground hover:text-foreground",
+                  "hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20",
+                )}
+              >
+                <User className="h-4 w-4" />
+              </Link>
+            )}
           </nav>
 
           {/* Right actions */}
@@ -98,7 +111,6 @@ export function SiteHeader() {
             <ThemeToggle />
 
             {account ? (
-              /* Logged in: org switcher + user + logout */
               <>
                 <div className="relative">
                   <Button
@@ -125,14 +137,6 @@ export function SiteHeader() {
                           <span className="text-xs text-muted-foreground ml-auto capitalize">{org.businessType}</span>
                         </button>
                       ))}
-                      <div className="my-1 h-px bg-border" />
-                      <Link
-                        href="/"
-                        onClick={() => setShowOrgs(false)}
-                        className="block px-3 py-2 text-sm text-brand-teal dark:text-brand-cyan hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 rounded-lg transition"
-                      >
-                        Gérer mes entreprises
-                      </Link>
                     </div>
                   )}
                 </div>
@@ -147,7 +151,6 @@ export function SiteHeader() {
                 </Button>
               </>
             ) : (
-              /* Logged out: Sign in + Get started */
               <>
                 <Button
                   asChild
@@ -205,7 +208,7 @@ export function SiteHeader() {
                       {NAV_LINKS.map((link) => (
                         <SheetClose asChild key={link.href}>
                           <Link
-                            href={link.href}
+                            href={link.href === "#businesses" && !account ? "/login" : link.href}
                             className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-foreground hover:bg-brand-teal-soft/60 dark:hover:bg-brand-teal-soft/20"
                           >
                             {link.label}
@@ -221,18 +224,6 @@ export function SiteHeader() {
                       {account ? (
                         <>
                           <div className="px-3 py-2 text-sm font-medium">{account.fullName || account.email}</div>
-                          <div className="space-y-1">
-                            {orgs.map((org) => (
-                              <SheetClose asChild key={org.id}>
-                                <button
-                                  onClick={() => selectOrg(org, true)}
-                                  className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 transition"
-                                >
-                                  {org.name}
-                                </button>
-                              </SheetClose>
-                            ))}
-                          </div>
                           <Button
                             variant="outline"
                             className="w-full rounded-full text-red-500 border-red-500/20 hover:bg-red-500/10"
