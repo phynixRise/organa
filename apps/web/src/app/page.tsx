@@ -300,8 +300,17 @@ export default function RootPage() {
       <main className="flex-1">
         {tab === 'discover' ? (
           <>
+            <Hero />
+            <BusinessMarquee />
+            <BusinessVerticals />
+            <ModuleMatrix />
+            <Comparison />
+            <HowItWorks />
+            <PlatformFeatures />
+            <Security />
             <Pricing />
             <Faq />
+            <CtaSection />
           </>
         ) : (
           <section className="py-12">
