@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Menu, X, ArrowRight, LogOut, LayoutDashboard, ChevronDown, User } from "lucide-react";
+import { Menu, X, ArrowRight, LogOut, LayoutDashboard, User } from "lucide-react";
 import { BrandLogo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,12 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/auth-context";
-import { useOrg } from "@/contexts/org-context";
 import { cn } from "@/lib/utils";
 
-export function SiteHeader() {
+export function SiteHeader({ activeTab, onTabChange }: { activeTab?: string; onTabChange?: (tab: 'discover' | 'businesses') => void }) {
   const { account, logout } = useAuth();
-  const { orgs, selectOrg } = useOrg();
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-  const [showOrgs, setShowOrgs] = React.useState(false);
   const [showProfile, setShowProfile] = React.useState(false);
 
   React.useEffect(() => {
@@ -33,11 +30,10 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close dropdowns on outside click
+  // Close dropdown on outside click
   React.useEffect(() => {
     function handleClick(e: MouseEvent) {
       const target = e.target as HTMLElement;
-      if (!target.closest('[data-dropdown="orgs"]')) setShowOrgs(false);
       if (!target.closest('[data-dropdown="profile"]')) setShowProfile(false);
     }
     document.addEventListener("click", handleClick);
@@ -63,61 +59,69 @@ export function SiteHeader() {
           {/* Desktop nav — 3 tabs */}
           <nav className="hidden lg:flex items-center gap-1">
             {/* Tab 1: Découvrir */}
-            <Link
-              href="/"
-              className="relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors text-foreground hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20"
+            <button
+              onClick={() => onTabChange?.('discover')}
+              className={cn(
+                "relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20",
+                activeTab === 'discover'
+                  ? "text-brand-teal dark:text-brand-cyan"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
             >
               Découvrir
-            </Link>
+              {activeTab === 'discover' && (
+                <motion.span
+                  layoutId="nav-active"
+                  className="absolute inset-x-2.5 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-brand-teal to-brand-cyan"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+            </button>
 
             {/* Tab 2: Mes entreprises */}
             {account ? (
-              <div className="relative" data-dropdown="orgs">
-                <button
-                  onClick={() => { setShowOrgs(!showOrgs); setShowProfile(false); }}
-                  className="relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors text-muted-foreground hover:text-foreground hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 flex items-center gap-1.5"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  Mes entreprises
-                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showOrgs && "rotate-180")} />
-                </button>
-                {showOrgs && (
-                  <div className="absolute left-0 top-full mt-2 w-72 rounded-xl border border-border bg-card shadow-lg p-2 z-50">
-                    {orgs.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-muted-foreground">Aucune entreprise</div>
-                    ) : orgs.map((org) => (
-                      <button
-                        key={org.id}
-                        onClick={() => { selectOrg(org, true); setShowOrgs(false); }}
-                        className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 transition flex items-center gap-2"
-                      >
-                        <span className="font-medium truncate">{org.name}</span>
-                        <span className="text-xs text-muted-foreground ml-auto capitalize">{org.businessType}</span>
-                      </button>
-                    ))}
-                  </div>
+              <button
+                onClick={() => onTabChange?.('businesses')}
+                className={cn(
+                  "relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 flex items-center gap-1.5",
+                  activeTab === 'businesses'
+                    ? "text-brand-teal dark:text-brand-cyan"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors text-muted-foreground hover:text-foreground hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 flex items-center gap-1.5"
               >
                 <LayoutDashboard className="h-4 w-4" />
                 Mes entreprises
-              </Link>
+                {activeTab === 'businesses' && (
+                  <motion.span
+                    layoutId="nav-active"
+                    className="absolute inset-x-2.5 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-brand-teal to-brand-cyan"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={() => onTabChange?.('businesses')}
+                className={cn(
+                  "relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 flex items-center gap-1.5",
+                  activeTab === 'businesses'
+                    ? "text-brand-teal dark:text-brand-cyan"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Mes entreprises
+              </button>
             )}
 
             {/* Tab 3: Profile (logged in only) */}
             {account && (
               <div className="relative" data-dropdown="profile">
                 <button
-                  onClick={() => { setShowProfile(!showProfile); setShowOrgs(false); }}
+                  onClick={() => { setShowProfile(!showProfile); }}
                   className="relative px-3.5 py-2 text-sm font-medium rounded-lg transition-colors text-muted-foreground hover:text-foreground hover:bg-brand-teal-soft/50 dark:hover:bg-brand-teal-soft/20 flex items-center gap-1.5"
                 >
                   <User className="h-4 w-4" />
-                  {account.fullName || account.email}
-                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showProfile && "rotate-180")} />
                 </button>
                 {showProfile && (
                   <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card shadow-lg p-2 z-50">
