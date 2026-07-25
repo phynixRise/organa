@@ -5,7 +5,7 @@ export class CreateOrganizationDto {
   name: string;
 
   @IsString()
-  @IsIn(['cafe', 'restaurant', 'boutique', 'gym', 'cabinet_medical', 'tienda'])
+  @IsIn(['cafe', 'restaurant', 'boutique', 'gym', 'cabinet_medical', 'tienda', 'hotel', 'rental_property'])
   businessType: string;
 
   @IsString()
