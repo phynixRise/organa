@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
-import { Zap } from 'lucide-react';
+import { BrandLogo } from '@/components/site/logo';
+import { ScrollProgress } from '@/components/site/scroll-progress';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,36 +30,37 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 bg-[#0A0A0F]">
+    <main className="flex min-h-screen items-center justify-center px-4 bg-background">
+      <ScrollProgress />
       <div className="w-full max-w-sm">
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center"><Zap className="w-5 h-5 text-white" /></div>
-          <span className="font-display text-2xl text-[#F8F8F2] tracking-wider">ORGANA</span>
+          <BrandLogo size={40} withWordmark={false} />
+          <span className="font-display text-2xl font-bold tracking-wider">ORGANA</span>
         </div>
-        <div className="card-gym p-6">
-          <h2 className="text-lg font-semibold text-center mb-4 text-[#F8F8F2]">Se connecter</h2>
-          {error && <div className="mb-4 p-3 bg-[#EF4444]/10 text-[#EF4444] text-sm rounded-lg border border-[#EF4444]/20">{error}</div>}
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <h2 className="text-lg font-semibold text-center mb-4">Se connecter</h2>
+          {error && <div className="mb-4 p-3 bg-red-500/10 text-red-500 text-sm rounded-lg border border-red-500/20">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="login-email" className="block text-sm font-medium text-[#9CA3AF] mb-1">Email</label>
+              <label htmlFor="login-email" className="block text-sm font-medium text-muted-foreground mb-1">Email</label>
               <input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1C1C27] border border-white/5 rounded-lg text-sm text-[#F8F8F2] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#F97316]/50"
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
                 placeholder="votre@email.com" />
             </div>
             <div>
-              <label htmlFor="login-password" className="block text-sm font-medium text-[#9CA3AF] mb-1">Mot de passe</label>
+              <label htmlFor="login-password" className="block text-sm font-medium text-muted-foreground mb-1">Mot de passe</label>
               <input id="login-password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1C1C27] border border-white/5 rounded-lg text-sm text-[#F8F8F2] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#F97316]/50"
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
                 placeholder="••••••••" />
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-2.5 bg-[#F97316] text-white rounded-lg hover:bg-[#EA580C] disabled:opacity-50 font-medium text-sm transition">
+              className="w-full py-2.5 bg-brand-teal text-white rounded-lg hover:bg-brand-teal/90 disabled:opacity-50 font-medium text-sm transition shadow-brand">
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>
         </div>
-        <p className="text-center text-sm text-[#9CA3AF] mt-4">
-          Pas encore de compte ? <Link href="/signup" className="text-[#F97316] hover:underline">Créer un compte</Link>
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Pas encore de compte ? <Link href="/signup" className="text-brand-teal dark:text-brand-cyan hover:underline">Créer un compte</Link>
         </p>
       </div>
     </main>
