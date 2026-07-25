@@ -30,6 +30,13 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const refreshOrgs = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setOrgs([]);
+      setSelectedOrg(null);
+      setLoading(false);
+      return;
+    }
     try {
       const data = await api.get<Organization[]>('/organizations');
       setOrgs(data);
