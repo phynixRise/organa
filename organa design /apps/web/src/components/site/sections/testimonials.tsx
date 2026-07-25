@@ -18,12 +18,12 @@ export function Testimonials() {
             Built for real days, not demos
           </Badge>
           <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            The problems we&apos;re actually solving.
+            The problems we're actually solving.
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Organa is early — we&apos;re building alongside the first Tunisian
+            Organa is early — we're building alongside the first Tunisian
             owners piloting it, not shipping a finished product to a crowd.
-            Here&apos;s the everyday friction it&apos;s built to remove.
+            Here's the everyday friction it's built to remove.
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export function Testimonials() {
 
         <div className="mt-10 flex justify-center">
           <a
-            href="/signup"
+            href="#get-started"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-teal dark:text-brand-cyan hover:gap-2.5 transition-all"
           >
             Want to be one of the first pilot businesses?

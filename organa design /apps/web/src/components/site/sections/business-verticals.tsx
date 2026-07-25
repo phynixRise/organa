@@ -155,9 +155,14 @@ function VerticalCard({
       </div>
 
       <div className="mt-5">
-        <h3 className="font-display text-xl font-bold tracking-tight">
-          {vertical.name}
-        </h3>
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <h3 className="font-display text-xl font-bold tracking-tight">
+            {vertical.name}
+          </h3>
+          <span className="text-xs text-muted-foreground font-medium">
+            · {vertical.french}
+          </span>
+        </div>
         <p className="mt-0.5 text-sm font-medium text-brand-teal dark:text-brand-cyan">
           {vertical.tagline}
         </p>
@@ -167,12 +172,31 @@ function VerticalCard({
         {vertical.description}
       </p>
 
+      <ul className="mt-5 space-y-2">
+        {vertical.modules.map((m) => (
+          <li
+            key={m}
+            className="flex items-center gap-2 text-sm text-foreground/80"
+          >
+            <span
+              className={cn(
+                "grid h-4 w-4 place-items-center rounded-full",
+                accentClasses.chip,
+              )}
+            >
+              <Check className="h-2.5 w-2.5" />
+            </span>
+            {m}
+          </li>
+        ))}
+      </ul>
+
       <div className="mt-6 pt-5 border-t border-border flex items-center justify-between">
         <span className="text-xs text-muted-foreground font-mono">
           /modules/{vertical.slug}
         </span>
         <Link
-          href="/signup"
+          href="#get-started"
           className="inline-flex items-center gap-1 text-sm font-medium text-brand-teal dark:text-brand-cyan hover:gap-2 transition-all"
         >
           {isEarly ? "Get access" : "Notify me"}

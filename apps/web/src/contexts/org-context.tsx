@@ -1,25 +1,15 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { getDashboardPath } from '@/lib/constants';
 
 interface Organization {
   id: string;
   name: string;
   businessType: string;
   status: string;
-}
-
-const GYM_TYPES = ['gym', 'fitness', 'salle_de_sport'];
-const BOUTIQUE_TYPES = ['boutique', 'tienda'];
-const CAFE_TYPES = ['cafe', 'restaurant'];
-
-function getDashboardPath(businessType: string): string {
-  if (GYM_TYPES.includes(businessType)) return '/gym/dashboard';
-  if (BOUTIQUE_TYPES.includes(businessType)) return '/boutique/dashboard';
-  if (CAFE_TYPES.includes(businessType)) return '/cafe/dashboard';
-  return '/boutique/dashboard';
 }
 
 interface OrgState {
@@ -38,7 +28,6 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   const refreshOrgs = useCallback(async () => {
     try {
@@ -86,8 +75,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     setSelectedOrg(org);
     localStorage.setItem('orgId', org.id);
     if (redirect) {
-      const target = getDashboardPath(org.businessType);
-      router.push(target);
+      router.push(getDashboardPath(org.businessType));
     }
   }, [router]);
 
@@ -97,8 +85,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     setSelectedOrg(org);
     localStorage.setItem('orgId', org.id);
     if (redirect) {
-      const target = getDashboardPath(org.businessType);
-      router.push(target);
+      router.push(getDashboardPath(org.businessType));
     }
     return org;
   }, [router]);

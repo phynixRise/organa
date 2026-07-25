@@ -14,7 +14,7 @@ import {
   ScrollRevealItem,
 } from "@/components/site/scroll-reveal";
 
-const VALUES: { icon: React.ElementType; title: string; body: string; accent: "teal" | "cyan" | "deep" }[] = [
+const VALUES = [
   {
     icon: Layers,
     title: "One login, many businesses",

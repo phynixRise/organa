@@ -207,6 +207,14 @@ export const FAQS: Faq[] = [
     q: "Which languages does Organa support?",
     a: "The interface ships in French and Arabic, with English available for back-office work. Receipts and customer-facing messages are localised per business.",
   },
+  {
+    q: "I own a building and rent out apartments — is that a fit?",
+    a: "Yes. The Property & Rentals vertical is built for landlords: track buildings and units, manage tenants and leases, collect rent monthly in TND via Konnect, and log maintenance requests. Run it alongside a café or boutique from the same login if you run mixed businesses.",
+  },
+  {
+    q: "When are the other verticals launching?",
+    a: "Boutique and Café are the first live verticals. Restaurant, Gym, Cabinet médical, Tienda, Hotel and Property & Rentals are in active design — each gets a POS tuned specifically to its workflow rather than a generic template.",
+  },
 ];
 
 // ---- Module matrix (the "departments" each vertical gets) ----
@@ -452,3 +460,5 @@ export const VALUE_SCENARIOS: ValueScenario[] = [
     accent: "deep",
   },
 ];
+
+

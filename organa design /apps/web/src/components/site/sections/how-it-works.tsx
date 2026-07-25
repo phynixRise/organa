@@ -1,5 +1,6 @@
 import * as React from "react";
-import { UserPlus, Building2, Rocket } from "lucide-react";
+import Link from "next/link";
+import { UserPlus, Building2, Rocket, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   ScrollReveal,
@@ -84,6 +85,22 @@ export function HowItWorks() {
             </ScrollRevealItem>
           ))}
         </ScrollRevealGroup>
+
+        <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            href="#get-started"
+            className="inline-flex items-center gap-2 rounded-full bg-brand-teal hover:bg-brand-teal/90 text-white px-6 py-3 text-sm font-semibold shadow-brand-lg transition-colors"
+          >
+            Start free for 14 days
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="#pricing"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-6 py-3 text-sm font-semibold hover:border-brand-cyan/50 transition-colors"
+          >
+            See pricing
+          </Link>
+        </div>
       </div>
     </section>
   );

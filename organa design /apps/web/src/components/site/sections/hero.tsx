@@ -51,9 +51,11 @@ export function Hero() {
               <span className="text-gradient-brand">every business</span> you run.
             </h1>
 
-            <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
-              One login. One bill. Café, boutique, gym — each with the tools it
-              actually needs. No more eight apps, eight logins.
+            <p className="mt-6 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0">
+              Organa is a single subscription that runs café, restaurant,
+              boutique, gym, hotel, property &amp; rentals, cabinet médical and
+              tienda — each with the tools it actually needs, all under one
+              login. No more eight apps, eight logins, eight bills.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
@@ -62,7 +64,7 @@ export function Hero() {
                 size="lg"
                 className="h-12 rounded-full px-6 bg-brand-teal hover:bg-brand-teal/90 text-white shadow-brand-lg text-base"
               >
-                <Link href="/signup">
+                <Link href="#get-started">
                   Start free for 14 days
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -93,6 +95,29 @@ export function Hero() {
               </span>
             </div>
 
+            {/* built for row — targeting, not a customer claim that doesn't exist yet */}
+            <div className="mt-10 pt-6 border-t border-border/70">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground text-center lg:text-left">
+                Built for owners across Tunisia
+              </p>
+              <div className="mt-3 flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2">
+                {["Sidi Bou Said", "La Marsa", "Tunis", "Ariana", "Sfax"].map(
+                  (city, i) => (
+                    <span
+                      key={city}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground/70"
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          i === 0 ? "bg-brand-cyan" : "bg-brand-teal/60"
+                        }`}
+                      />
+                      {city}
+                    </span>
+                  ),
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Right column: product mockup */}
