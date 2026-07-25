@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organa — Un compte. Toutes vos affaires.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#073B3D;
+    --teal:#0C5C56;
+    --teal-deep:#063E3A;
+    --cyan:#00B8E0;
+    --paper:#F5F7F5;
+    --mist:#E4EFEE;
+    --white:#FFFFFF;
+    --line:#D4E1DF;
+    --muted:#4C6664;
+    --radius:18px;
+    --radius-sm:12px;
+    --max:1160px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Figtree',sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{max-width:100%;display:block;}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 28px;}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px;}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(245,247,245,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:var(--max);margin:0 auto;padding:16px 28px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand img{width:34px;height:34px;border-radius:50%;object-fit:cover;}
+  .brand span{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:19px;}
+  .nav-links{display:flex;align-items:center;gap:32px;}
+  .nav-links a{font-size:14.5px;font-weight:500;color:var(--muted);transition:color .15s;}
+  .nav-links a:hover{color:var(--teal);}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 22px;border-radius:999px;font-weight:600;font-size:14.5px;
+    border:1.5px solid transparent;cursor:pointer;transition:transform .15s, box-shadow .15s, background .15s;
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--teal);color:#fff;box-shadow:0 1px 2px rgba(6,40,38,.12);}
+  .btn-primary:hover{background:var(--teal-deep);transform:translateY(-1px);box-shadow:0 6px 16px rgba(6,40,38,.18);}
+  .btn-ghost{background:transparent;color:var(--teal);border-color:var(--line);}
+  .btn-ghost:hover{border-color:var(--teal);}
+  .btn-light{background:#fff;color:var(--teal);}
+  .btn-light:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.12);}
+  .nav-cta{display:flex;align-items:center;gap:14px;}
+  .menu-toggle{display:none;background:none;border:none;cursor:pointer;padding:6px;}
+  .menu-toggle span{display:block;width:22px;height:2px;background:var(--ink);margin:5px 0;border-radius:2px;}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:76px 0 90px;position:relative;overflow:hidden;}
+  .hero-inner{
+    display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--teal);background:var(--mist);padding:7px 14px;border-radius:999px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cyan);}
+  h1{font-size:clamp(34px,4.4vw,54px);font-weight:800;line-height:1.06;color:var(--ink);}
+  h1 em{font-style:normal;color:var(--teal);}
+  .hero p.lead{
+    font-size:18px;line-height:1.6;color:var(--muted);margin:22px 0 30px;max-width:480px;
+  }
+  .hero-ctas{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .trust-line{margin-top:18px;font-size:13.5px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+  .trust-line svg{width:15px;height:15px;color:var(--cyan);flex-shrink:0;}
+
+  /* signature: puzzle quadrant visual */
+  .puzzle{position:relative;width:100%;max-width:420px;margin:0 auto;aspect-ratio:1;}
+  .puzzle-grid{
+    display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+    gap:14px;width:100%;height:100%;
+  }
+  .ptile{
+    border-radius:22px;padding:20px;display:flex;flex-direction:column;justify-content:space-between;
+    position:relative;overflow:hidden;
+    animation:float 6s ease-in-out infinite;
+    transition:transform .25s ease;
+  }
+  .ptile:hover{transform:translateY(-4px) scale(1.02);}
+  .ptile:nth-child(1){background:var(--teal-deep);animation-delay:0s;}
+  .ptile:nth-child(2){background:var(--teal);animation-delay:.4s;}
+  .ptile:nth-child(3){background:var(--cyan);animation-delay:.8s;}
+  .ptile:nth-child(4){background:#0A4E4B;animation-delay:1.2s;}
+  .ptile svg{width:26px;height:26px;color:#fff;opacity:.95;}
+  .ptile span{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;color:#fff;}
+  @keyframes float{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-6px);}
+  }
+  .puzzle::after{
+    content:"";position:absolute;inset:-40px;z-index:-1;
+    background:radial-gradient(circle at center, var(--mist) 0%, transparent 70%);
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ptile{animation:none;}
+  }
+
+  /* section shared */
+  section{padding:88px 0;}
+  .section-head{max-width:600px;margin:0 auto 52px;text-align:center;}
+  .section-head h2{font-size:clamp(26px,3vw,36px);font-weight:800;line-height:1.2;}
+  .section-head p{font-size:16.5px;color:var(--muted);margin-top:14px;line-height:1.6;}
+
+  /* problem strip */
+  .problem{background:var(--teal-deep);color:#fff;padding:56px 0;}
+  .problem .wrap{text-align:center;max-width:720px;}
+  .problem p{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(19px,2.4vw,25px);font-weight:600;line-height:1.5;}
+  .problem p .cross{color:#8FD8E6;text-decoration:line-through;text-decoration-color:rgba(255,255,255,.4);}
+
+  /* trades grid */
+  .trades{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  .trade-card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px 22px;transition:box-shadow .2s, transform .2s, border-color .2s;
+  }
+  .trade-card:hover{box-shadow:0 14px 32px rgba(7,59,61,.09);transform:translateY(-3px);border-color:transparent;}
+  .trade-icon{
+    width:48px;height:48px;border-radius:14px;background:var(--mist);
+    display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  }
+  .trade-icon svg{width:24px;height:24px;color:var(--teal);}
+  .trade-card h3{font-size:16.5px;font-weight:700;margin-bottom:8px;}
+  .trade-card p{font-size:14px;color:var(--muted);line-height:1.55;margin:0;}
+
+  /* features */
+  .features{background:var(--mist);}
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .feat{background:var(--paper);padding:36px 34px;}
+  .feat-num{
+    width:38px;height:38px;border-radius:10px;background:var(--white);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  }
+  .feat-num svg{width:19px;height:19px;color:var(--cyan);}
+  .feat h3{font-size:17px;font-weight:700;margin-bottom:9px;}
+  .feat p{font-size:14.5px;color:var(--muted);line-height:1.6;margin:0;}
+
+  /* pricing */
+  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch;}
+  .price-card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:34px 28px;display:flex;flex-direction:column;position:relative;
+  }
+  .price-card.pop{border-color:var(--teal);box-shadow:0 20px 44px rgba(7,59,61,.14);}
+  .pop-badge{
+    position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+    background:var(--teal);color:#fff;font-size:12px;font-weight:700;padding:5px 14px;border-radius:999px;
+  }
+  .price-card h3{font-size:15px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .price-amt{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:38px;margin:14px 0 2px;}
+  .price-amt sup{font-size:15px;font-weight:600;color:var(--muted);}
+  .price-sub{font-size:13.5px;color:var(--muted);margin-bottom:22px;}
+  .price-list{list-style:none;padding:0;margin:0 0 26px;flex:1;}
+  .price-list li{display:flex;align-items:flex-start;gap:10px;font-size:14px;padding:8px 0;color:var(--ink);}
+  .price-list svg{width:17px;height:17px;color:var(--teal);flex-shrink:0;margin-top:2px;}
+  .price-note{text-align:center;font-size:13px;color:var(--muted);margin-top:26px;}
+
+  /* final cta */
+  .final-cta{background:var(--teal-deep);position:relative;overflow:hidden;}
+  .final-cta .wrap{text-align:center;position:relative;z-index:1;}
+  .final-cta h2{color:#fff;font-size:clamp(28px,3.6vw,42px);font-weight:800;margin-bottom:16px;}
+  .final-cta p{color:#BFE6E3;font-size:17px;margin-bottom:32px;}
+  .pattern{
+    position:absolute;inset:0;opacity:.07;
+    background-image:
+      linear-gradient(45deg, #fff 12.5%, transparent 12.5%, transparent 87.5%, #fff 87.5%),
+      linear-gradient(-45deg, #fff 12.5%, transparent 12.5%, transparent 87.5%, #fff 87.5%),
+      linear-gradient(45deg, #fff 12.5%, transparent 12.5%, transparent 87.5%, #fff 87.5%),
+      linear-gradient(-45deg, #fff 12.5%, transparent 12.5%, transparent 87.5%, #fff 87.5%);
+    background-size:60px 60px;
+    background-position:0 0, 0 30px, 30px -30px, -30px 0px;
+  }
+
+  /* footer */
+  footer{padding:56px 0 32px;}
+  .foot-top{display:flex;justify-content:space-between;align-items:flex-start;gap:40px;flex-wrap:wrap;padding-bottom:40px;border-bottom:1px solid var(--line);}
+  .foot-brand .brand{margin-bottom:12px;}
+  .foot-brand p{font-size:14px;color:var(--muted);max-width:280px;line-height:1.6;}
+  .foot-cols{display:flex;gap:64px;flex-wrap:wrap;}
+  .foot-col h4{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:16px;}
+  .foot-col a{display:block;font-size:14.5px;color:var(--ink);margin-bottom:11px;}
+  .foot-col a:hover{color:var(--teal);}
+  .foot-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;font-size:13px;color:var(--muted);flex-wrap:wrap;gap:12px;}
+
+  /* reveal on scroll */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* responsive */
+  @media (max-width:880px){
+    .hero-inner{grid-template-columns:1fr;}
+    .puzzle{order:-1;max-width:300px;}
+    .trades{grid-template-columns:repeat(2,1fr);}
+    .feat-grid{grid-template-columns:1fr;}
+    .price-grid{grid-template-columns:1fr;}
+    .nav-links{display:none;}
+    .menu-toggle{display:block;}
+  }
+  @media (max-width:520px){
+    .trades{grid-template-columns:1fr;}
+    .hero{padding:52px 0 60px;}
+    section{padding:64px 0;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <img src="organa-icon.jpg" alt="Organa">
+      <span>Organa</span>
+    </a>
+    <div class="nav-links">
+      <a href="#trades">Fonctionnalités</a>
+      <a href="#pricing">Tarifs</a>
+      <a href="#how">Comment ça marche</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#pricing" class="btn btn-ghost" style="display:none;">Se connecter</a>
+      <a href="#pricing" class="btn btn-primary">Essayer gratuitement</a>
+      <button class="menu-toggle" aria-label="Ouvrir le menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-inner">
+    <div>
+      <span class="eyebrow">Conçu pour les commerces tunisiens</span>
+      <h1>Un compte.<br>Toutes vos <em>affaires</em>.</h1>
+      <p class="lead">Café, boutique, salle de sport, cabinet — Organa s'adapte à votre métier, pas l'inverse. Gérez tout depuis une seule application, en français, en dinars, à votre rythme.</p>
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn btn-primary" style="padding:14px 28px;font-size:15.5px;">Essayer gratuitement</a>
+        <a href="#how" class="btn btn-ghost" style="padding:14px 28px;font-size:15.5px;">Voir comment ça marche</a>
+      </div>
+      <div class="trust-line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Sans engagement · Configuration en 10 minutes
+      </div>
+    </div>
+    <div class="puzzle" role="img" aria-label="Un seul produit, quatre types de commerces : café et restaurant, boutique, salle de sport, cabinet médical">
+      <div class="puzzle-grid">
+        <div class="ptile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+          <span>Café &amp; restaurant</span>
+        </div>
+        <div class="ptile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>Boutique &amp; tienda</span>
+        </div>
+        <div class="ptile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>
+          <span>Salle de sport</span>
+        </div>
+        <div class="ptile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          <span>Cabinet médical</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="problem">
+  <div class="wrap">
+    <p><span class="cross">Un cahier. Un groupe WhatsApp. Un fichier Excel.</span><br>Organa remplace tout ça — sans compliquer votre journée.</p>
+  </div>
+</div>
+
+<section id="trades">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Un outil, plusieurs métiers</span>
+      <h2>Pensé pour votre métier, pas un logiciel générique</h2>
+      <p>Chaque type de commerce a ses propres écrans et son propre vocabulaire — construits sur le même compte, la même app, le même prix.</p>
+    </div>
+    <div class="trades reveal">
+      <div class="trade-card">
+        <div class="trade-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg></div>
+        <h3>Café &amp; restaurant</h3>
+        <p>Commandes rapides, tables, tickets — pensé pour le rythme du comptoir et de la salle.</p>
+      </div>
+      <div class="trade-card">
+        <div class="trade-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/></svg></div>
+        <h3>Boutique &amp; tienda</h3>
+        <p>Catalogue, stock et code-barres — du réassort à la vente, en un seul endroit.</p>
+      </div>
+      <div class="trade-card">
+        <div class="trade-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg></div>
+        <h3>Salle de sport</h3>
+        <p>Abonnements, présences et rappels d'échéance automatiques par WhatsApp.</p>
+      </div>
+      <div class="trade-card">
+        <div class="trade-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg></div>
+        <h3>Cabinet médical</h3>
+        <p>Rendez-vous, dossiers patients et rappels — confidentiel et organisé.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Fait pour ici</span>
+      <h2>Construit pour la réalité du terrain, pas pour une démo</h2>
+    </div>
+    <div class="feat-grid reveal">
+      <div class="feat">
+        <div class="feat-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+        <h3>Vos clients sont sur WhatsApp</h3>
+        <p>Confirmations, rappels et reçus envoyés là où vos clients regardent déjà — pas un email qu'ils n'ouvriront jamais.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+        <h3>Paiements en dinars</h3>
+        <p>Konnect, cartes locales et internationales — sans les complications d'un système pensé pour un autre pays.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+        <h3>Fait pour fonctionner ici</h3>
+        <p>Optimisé pour les connexions lentes et les téléphones modestes — pas seulement conçu pour la 5G.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-num"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h3>Un prix qui suit votre croissance</h3>
+        <p>Vous payez selon le nombre d'affaires que vous gérez — pas selon des fonctionnalités que vous n'utiliserez jamais.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Tarifs</span>
+      <h2>Un prix simple, basé sur ce qui compte</h2>
+      <p>Pas de palier par fonctionnalité à déchiffrer. Le prix suit le nombre d'affaires que vous gérez — c'est tout.</p>
+    </div>
+    <div class="price-grid reveal">
+      <div class="price-card">
+        <h3>Solo</h3>
+        <div class="price-amt">29 <sup>TND / mois</sup></div>
+        <div class="price-sub">1 commerce, toutes les fonctionnalités de votre métier</div>
+        <ul class="price-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>1 affaire incluse</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Module de votre métier complet</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Notifications WhatsApp</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Paiements Konnect</li>
+        </ul>
+        <a href="#" class="btn btn-ghost" style="width:100%;">Essayer gratuitement</a>
+      </div>
+      <div class="price-card pop">
+        <span class="pop-badge">Le plus choisi</span>
+        <h3>Multi</h3>
+        <div class="price-amt">69 <sup>TND / mois</sup></div>
+        <div class="price-sub">Jusqu'à 3 affaires, un seul login</div>
+        <ul class="price-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Jusqu'à 3 affaires</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Mélangez les types de commerce</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Basculez entre vos affaires en un clic</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Support prioritaire</li>
+        </ul>
+        <a href="#" class="btn btn-primary" style="width:100%;">Essayer gratuitement</a>
+      </div>
+      <div class="price-card">
+        <h3>Illimité</h3>
+        <div class="price-amt">129 <sup>TND / mois</sup></div>
+        <div class="price-sub">Affaires illimitées, sous un seul compte</div>
+        <ul class="price-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Affaires illimitées</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Tableau de bord multi-affaires</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Accès équipe étendu</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Support prioritaire</li>
+        </ul>
+        <a href="#" class="btn btn-ghost" style="width:100%;">Essayer gratuitement</a>
+      </div>
+    </div>
+    <p class="price-note reveal">Prix affichés à titre indicatif — à ajuster avant lancement.</p>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="pattern"></div>
+  <div class="wrap reveal">
+    <h2>Prêt à simplifier votre gestion ?</h2>
+    <p>Rejoignez les premiers commerces qui gèrent tout depuis Organa.</p>
+    <a href="#pricing" class="btn btn-light" style="padding:15px 32px;font-size:16px;">Essayer gratuitement</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="brand" href="#top">
+          <img src="organa-icon.jpg" alt="Organa">
+          <span>Organa</span>
+        </a>
+        <p>Une seule application pour gérer tous vos commerces, conçue en Tunisie et pour la Tunisie.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>Produit</h4>
+          <a href="#trades">Fonctionnalités</a>
+          <a href="#pricing">Tarifs</a>
+          <a href="#how">Comment ça marche</a>
+        </div>
+        <div class="foot-col">
+          <h4>Métiers</h4>
+          <a href="#trades">Café &amp; restaurant</a>
+          <a href="#trades">Boutique &amp; tienda</a>
+          <a href="#trades">Salle de sport</a>
+          <a href="#trades">Cabinet médical</a>
+        </div>
+        <div class="foot-col">
+          <h4>Entreprise</h4>
+          <a href="#">Contact</a>
+          <a href="#">Confidentialité</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Organa. Tous droits réservés.</span>
+      <span>Fait à Tunis 🇹🇳</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // mobile menu toggle
+  const toggle = document.querySelector('.menu-toggle');
+  const links = document.querySelector('.nav-links');
+  toggle.addEventListener('click', () => {
+    const open = links.style.display === 'flex';
+    links.style.display = open ? 'none' : 'flex';
+    links.style.cssText += open ? '' : 'position:absolute;top:64px;left:0;right:0;background:#fff;flex-direction:column;padding:20px 28px;border-bottom:1px solid var(--line);gap:18px;';
+  });
+
+  // scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
