@@ -52,10 +52,9 @@ One platform, rented (subscription) to business owners. Each owner manages one o
 ```
 organa/
 ├── apps/
-│   ├── api/          NestJS backend
-│   └── web/          Next.js frontend
-├── core/             Prisma schema, shared DB logic
-├── modules/          Business-specific modules (cafe, gym, etc.)
+│   ├── api/          NestJS backend (auth, customers, orders, payments, gym, etc.)
+│   └── web/          Next.js frontend (marketing site + dashboard)
+├── core/             Prisma schema, migrations, shared DB logic
 ├── packages/
 │   └── shared/       Shared TypeScript types
 ├── docker-compose.yml

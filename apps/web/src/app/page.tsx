@@ -1,50 +1,117 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { useOrg } from '@/contexts/org-context';
 import { api } from '@/lib/api';
 import { getDashboardPath, getBizColor, ALL_BUSINESS_TYPES, getBizIcon, getBizLabel } from '@/lib/constants';
 import {
-  Plus, Trash2, LayoutDashboard, Edit2, X, Check, Eye, ChevronDown, ArrowRight
+  Plus, Trash2, LayoutDashboard, Edit2, X, Check, Eye, ChevronDown, ArrowRight,
+  BarChart3, TrendingUp, TrendingDown, Users, CreditCard, Package, Filter,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { ScrollProgress } from '@/components/site/scroll-progress';
 import { SiteHeader } from '@/components/site/header';
 import { SiteFooter } from '@/components/site/footer';
-import { Hero } from '@/components/site/sections/hero';
-import { BusinessMarquee } from '@/components/site/sections/business-marquee';
-import { BusinessVerticals } from '@/components/site/sections/business-verticals';
-import { ModuleMatrix } from '@/components/site/sections/module-matrix';
-import { Comparison } from '@/components/site/sections/comparison';
-import { HowItWorks } from '@/components/site/sections/how-it-works';
-import { PlatformFeatures } from '@/components/site/sections/platform-features';
-import { Security } from '@/components/site/sections/security';
-import { Pricing } from '@/components/site/sections/pricing';
-import { Faq } from '@/components/site/sections/faq';
-import { CtaSection } from '@/components/site/sections/cta';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
 
-interface BizStats { orders: number; revenue: number; customers: number; products: number; recentOrders: any[]; }
+const Hero = dynamic(() => import('@/components/site/sections/hero').then(m => m.Hero), { ssr: false });
+const BusinessMarquee = dynamic(() => import('@/components/site/sections/business-marquee').then(m => m.BusinessMarquee), { ssr: false });
+const BusinessVerticals = dynamic(() => import('@/components/site/sections/business-verticals').then(m => m.BusinessVerticals), { ssr: false });
+const ModuleMatrix = dynamic(() => import('@/components/site/sections/module-matrix').then(m => m.ModuleMatrix), { ssr: false });
+const Comparison = dynamic(() => import('@/components/site/sections/comparison').then(m => m.Comparison), { ssr: false });
+const HowItWorks = dynamic(() => import('@/components/site/sections/how-it-works').then(m => m.HowItWorks), { ssr: false });
+const PlatformFeatures = dynamic(() => import('@/components/site/sections/platform-features').then(m => m.PlatformFeatures), { ssr: false });
+const Security = dynamic(() => import('@/components/site/sections/security').then(m => m.Security), { ssr: false });
+const Pricing = dynamic(() => import('@/components/site/sections/pricing').then(m => m.Pricing), { ssr: false });
+const Faq = dynamic(() => import('@/components/site/sections/faq').then(m => m.Faq), { ssr: false });
+const CtaSection = dynamic(() => import('@/components/site/sections/cta').then(m => m.CtaSection), { ssr: false });
+
+interface CombinedStats {
+  totals: { revenue: number; payments: number; orders: number; customers: number };
+  orgStats: Array<{
+    orgId: string; orgName: string; businessType: string;
+    totalRevenue: number; totalOrders: number; totalCustomers: number; totalPayments: number;
+    recentOrders: any[];
+  }>;
+  monthlyRevenue: Array<{ month: string; revenue: number }>;
+  orgs: Array<{ id: string; name: string; businessType: string }>;
+}
+
+function StatCard({ label, value, icon: Icon, color, sub }: { label: string; value: string; icon: any; color: string; sub?: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 hover:border-brand-cyan/30 transition-all">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-2xl font-display font-bold mt-1">{value}</p>
+          {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
+        </div>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
+          <Icon className="w-5 h-5 text-white" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RevenueChart({ data }: { data: Array<{ month: string; revenue: number }> }) {
+  const max = Math.max(...data.map((d) => d.revenue), 1);
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <h3 className="font-display text-lg font-bold mb-4">Revenus (12 mois)</h3>
+      <div className="flex items-end gap-1.5 h-40">
+        {data.map((d, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div
+              className="w-full rounded-t bg-brand-teal dark:bg-brand-cyan transition-all hover:opacity-80"
+              style={{ height: `${Math.max((d.revenue / max) * 100, 2)}%` }}
+              title={`${(d.revenue / 1000).toFixed(1)} TND`}
+            />
+            <span className="text-[10px] text-muted-foreground">{d.month}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OrgBreakdownBar({ orgStats }: { orgStats: CombinedStats['orgStats'] }) {
+  const total = orgStats.reduce((s, o) => s + o.totalRevenue, 0) || 1;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <h3 className="font-display text-lg font-bold mb-4">Répartition par entreprise</h3>
+      <div className="h-4 rounded-full overflow-hidden flex mb-4">
+        {orgStats.map((org) => (
+          <div
+            key={org.orgId}
+            className="h-full transition-all"
+            style={{ width: `${(org.totalRevenue / total) * 100}%`, backgroundColor: getBizColor(org.businessType) }}
+            title={`${org.orgName}: ${(org.totalRevenue / 1000).toFixed(1)} TND`}
+          />
+        ))}
+      </div>
+      <div className="space-y-2">
+        {orgStats.map((org) => (
+          <div key={org.orgId} className="flex items-center gap-3 text-sm">
+            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: getBizColor(org.businessType) }} />
+            <span className="flex-1 truncate text-foreground">{org.orgName}</span>
+            <span className="text-muted-foreground text-xs">{getBizLabel(org.businessType)}</span>
+            <span className="font-medium">{(org.totalRevenue / 1000).toFixed(1)} TND</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function BusinessCard({ org, onOpen, onDelete, onEdit }: {
   org: any; onOpen: () => void; onDelete: () => void; onEdit: (name: string) => void;
 }) {
-  const [stats, setStats] = useState<BizStats | null>(null);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(org.name);
-  const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    Promise.all([
-      api.get<any[]>(`/organizations/${org.id}/orders`).catch(() => []),
-      api.get<any[]>(`/organizations/${org.id}/products`).catch(() => []),
-      api.get<any[]>(`/organizations/${org.id}/customers`).catch(() => []),
-    ]).then(([orders, products, customers]) => {
-      const revenue = orders.reduce((s: number, o: any) => s + (o.totalMillimes || 0), 0);
-      setStats({ orders: orders.length, revenue, customers: customers.length, products: products.length, recentOrders: orders.slice(-5).reverse() });
-    }).catch(() => {});
-  }, [org.id]);
 
   const color = getBizColor(org.businessType);
   const Icon = getBizIcon(org.businessType);
@@ -81,45 +148,6 @@ function BusinessCard({ org, onOpen, onDelete, onEdit }: {
         </button>
       </div>
 
-      {stats && (
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          <div className="p-2 bg-muted/50 rounded-lg text-center">
-            <div className="text-sm font-bold">{stats.orders}</div>
-            <div className="text-[10px] text-muted-foreground">Ventes</div>
-          </div>
-          <div className="p-2 bg-muted/50 rounded-lg text-center">
-            <div className="text-sm font-bold text-brand-teal dark:text-brand-cyan">{(stats.revenue / 1000).toFixed(1)}</div>
-            <div className="text-[10px] text-muted-foreground">TND</div>
-          </div>
-          <div className="p-2 bg-muted/50 rounded-lg text-center">
-            <div className="text-sm font-bold">{stats.customers}</div>
-            <div className="text-[10px] text-muted-foreground">Clients</div>
-          </div>
-          <div className="p-2 bg-muted/50 rounded-lg text-center">
-            <div className="text-sm font-bold">{stats.products}</div>
-            <div className="text-[10px] text-muted-foreground">Articles</div>
-          </div>
-        </div>
-      )}
-
-      <button onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-muted/50 rounded-lg text-xs text-muted-foreground hover:text-foreground transition mb-4">
-        <span>Ventes récentes</span>
-        <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-      </button>
-      {expanded && stats && (
-        <div className="mb-4 space-y-1">
-          {stats.recentOrders.length === 0 ? (
-            <div className="text-xs text-muted-foreground text-center py-2">Aucune vente</div>
-          ) : stats.recentOrders.map((o: any) => (
-            <div key={o.id} className="flex items-center justify-between px-3 py-1.5 text-xs">
-              <span className="text-muted-foreground">#{o.id.slice(0, 8)}</span>
-              <span className="text-brand-teal dark:text-brand-cyan">{((o.totalMillimes || 0) / 1000).toFixed(3)} TND</span>
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className="flex gap-2">
         <button onClick={onOpen}
           className="flex-1 px-4 py-2.5 bg-brand-teal text-white rounded-xl text-sm font-medium hover:bg-brand-teal/90 transition flex items-center justify-center gap-2 shadow-brand">
@@ -139,6 +167,20 @@ function BusinessManagerTab() {
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ name: '', businessType: 'gym' });
   const [creating, setCreating] = useState(false);
+  const [typeFilter, setTypeFilter] = useState('ALL');
+  const [periodFilter, setPeriodFilter] = useState('all');
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
+
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['combined-stats', typeFilter, periodFilter, selectedOrgId],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (typeFilter !== 'ALL') params.set('type', typeFilter);
+      if (periodFilter !== 'all') params.set('period', periodFilter);
+      if (selectedOrgId) params.set('orgId', selectedOrgId);
+      return api.get<CombinedStats>(`/organizations/combined-stats?${params.toString()}`);
+    },
+  });
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -149,33 +191,29 @@ function BusinessManagerTab() {
       await refreshOrgs();
       setForm({ name: '', businessType: 'gym' });
       setShowCreate(false);
-    } finally {
-      setCreating(false);
-    }
+    } finally { setCreating(false); }
   }
 
   async function handleDelete(org: any) {
     if (!confirm(`Supprimer "${org.name}" ? Cette action est irréversible.`)) return;
-    try {
-      await api.delete(`/organizations/${org.id}`);
-      await refreshOrgs();
-    } catch { /* handled by 401 interceptor */ }
+    try { await api.delete(`/organizations/${org.id}`); await refreshOrgs(); } catch {}
   }
 
   async function handleEditName(org: any, newName: string) {
-    try {
-      await api.put(`/organizations/${org.id}`, { name: newName });
-      await refreshOrgs();
-    } catch { /* handled by 401 interceptor */ }
+    try { await api.put(`/organizations/${org.id}`, { name: newName }); await refreshOrgs(); } catch {}
   }
 
-  function openBusiness(org: any) {
-    selectOrg(org, true);
-  }
+  const filteredOrgs = useMemo(() => {
+    if (typeFilter === 'ALL') return orgs;
+    const typeMap: Record<string, string[]> = {
+      cafe: ['cafe', 'restaurant'], gym: ['gym', 'fitness'], boutique: ['boutique', 'tienda'],
+    };
+    return orgs.filter((o) => (typeMap[typeFilter] || [typeFilter]).includes(o.businessType));
+  }, [orgs, typeFilter]);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="font-display text-3xl font-bold tracking-tight">Mes entreprises</h2>
           <p className="text-muted-foreground mt-1">{orgs.length} entreprise{orgs.length !== 1 ? 's' : ''}</p>
@@ -193,9 +231,7 @@ function BusinessManagerTab() {
               className="px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-brand-cyan" required />
             <select value={form.businessType} onChange={(e) => setForm((p) => ({ ...p, businessType: e.target.value }))}
               className="px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-brand-cyan">
-              {ALL_BUSINESS_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
+              {ALL_BUSINESS_TYPES.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
             </select>
             <button type="submit" disabled={creating}
               className="px-4 py-2 bg-brand-teal text-white rounded-lg text-sm font-medium hover:bg-brand-teal/90 transition disabled:opacity-50">
@@ -203,6 +239,97 @@ function BusinessManagerTab() {
             </button>
           </div>
         </form>
+      )}
+
+      {stats && (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+              <Filter className="w-4 h-4 text-muted-foreground ml-2" />
+              {['ALL', 'cafe', 'gym', 'boutique'].map((t) => (
+                <button key={t} onClick={() => { setTypeFilter(t); setSelectedOrgId(''); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                    typeFilter === t ? 'bg-brand-teal text-white' : 'text-muted-foreground hover:text-foreground'
+                  }`}>
+                  {t === 'ALL' ? 'Tous' : getBizLabel(t)}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+              {[
+                { value: 'day', label: 'Jour' },
+                { value: 'week', label: 'Semaine' },
+                { value: 'month', label: 'Mois' },
+                { value: 'year', label: 'Année' },
+                { value: 'all', label: 'Tout' },
+              ].map((p) => (
+                <button key={p.value} onClick={() => setPeriodFilter(p.value)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                    periodFilter === p.value ? 'bg-brand-cyan text-white' : 'text-muted-foreground hover:text-foreground'
+                  }`}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            {stats.orgs.length > 1 && (
+              <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                <select value={selectedOrgId} onChange={(e) => setSelectedOrgId(e.target.value)}
+                  className="px-3 py-1.5 bg-transparent text-xs font-medium text-foreground focus:outline-none">
+                  <option value="">Toutes les entreprises</option>
+                  {stats.orgs.map((o) => (<option key={o.id} value={o.id}>{o.name}</option>))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Revenu total" value={`${(stats.totals.revenue / 1000).toFixed(1)} TND`} icon={CreditCard} color="bg-brand-teal" sub={`${stats.totals.payments} paiements`} />
+            <StatCard label="Ventes" value={String(stats.totals.orders)} icon={Package} color="bg-blue-500" />
+            <StatCard label="Clients" value={String(stats.totals.customers)} icon={Users} color="bg-purple-500" />
+            <StatCard label="Entreprises actives" value={String(stats.orgStats.length)} icon={LayoutDashboard} color="bg-amber-500" />
+          </div>
+
+          {stats.orgStats.length > 1 && <OrgBreakdownBar orgStats={stats.orgStats} />}
+          <RevenueChart data={stats.monthlyRevenue} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {stats.orgStats.map((org) => {
+              const Icon = getBizIcon(org.businessType);
+              const color = getBizColor(org.businessType);
+              return (
+                <div key={org.orgId} className="rounded-2xl border border-border bg-card p-5 hover:border-brand-cyan/30 transition-all">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}20` }}>
+                      <Icon className="w-5 h-5" style={{ color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-display text-lg font-bold truncate">{org.orgName}</div>
+                      <div className="text-xs text-muted-foreground">{getBizLabel(org.businessType)}</div>
+                    </div>
+                    <Link href={getDashboardPath(org.businessType)}
+                      className="text-sm text-brand-teal dark:text-brand-cyan hover:underline flex items-center gap-1">
+                      Ouvrir <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-bold">{(org.totalRevenue / 1000).toFixed(1)}</div>
+                      <div className="text-[10px] text-muted-foreground">TND</div>
+                    </div>
+                    <div className="p-2 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-bold">{org.totalOrders}</div>
+                      <div className="text-[10px] text-muted-foreground">Ventes</div>
+                    </div>
+                    <div className="p-2 bg-muted/50 rounded-lg">
+                      <div className="text-sm font-bold">{org.totalCustomers}</div>
+                      <div className="text-[10px] text-muted-foreground">Clients</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {orgs.length === 0 ? (
@@ -216,8 +343,8 @@ function BusinessManagerTab() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {orgs.map((org) => (
-            <BusinessCard key={org.id} org={org} onOpen={() => openBusiness(org)}
+          {filteredOrgs.map((org) => (
+            <BusinessCard key={org.id} org={org} onOpen={() => selectOrg(org, true)}
               onDelete={() => handleDelete(org)} onEdit={(name) => handleEditName(org, name)} />
           ))}
         </div>

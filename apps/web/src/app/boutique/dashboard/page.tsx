@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useOrg } from '@/contexts/org-context';
 import { api } from '@/lib/api';
-import { ShoppingBag, DollarSign, Package, Users, TrendingUp } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
+import { ShoppingBag, DollarSign, Package, Users } from 'lucide-react';
+
+const BoutiqueRevenueChart = dynamic(() => import('./boutique-revenue-chart'), { ssr: false });
 
 export default function BoutiqueDashboard() {
   const { selectedOrg } = useOrg();
@@ -16,12 +18,14 @@ export default function BoutiqueDashboard() {
 
   useEffect(() => {
     if (!selectedOrg) return;
+    const controller = new AbortController();
     setLoading(true);
     Promise.all([
       api.get<any[]>(`/organizations/${selectedOrg.id}/orders`).catch(() => []),
       api.get<any[]>(`/organizations/${selectedOrg.id}/products`).catch(() => []),
       api.get<any[]>(`/organizations/${selectedOrg.id}/customers`).catch(() => []),
     ]).then(([orders, products, customers]) => {
+      if (controller.signal.aborted) return;
       const revenue = orders.reduce((s: number, o: any) => s + (o.totalMillimes || 0), 0);
       setStats({ orders: orders.length, revenue, products: products.length, customers: customers.length });
 
@@ -36,6 +40,7 @@ export default function BoutiqueDashboard() {
       setLowStock(products.filter((p: any) => p.stockQuantity !== undefined && p.stockQuantity <= 5).slice(0, 5));
       setLoading(false);
     });
+    return () => controller.abort();
   }, [selectedOrg]);
 
   if (!selectedOrg) return <div className="text-center py-12 text-muted-foreground">Sélectionnez une entreprise</div>;
@@ -67,22 +72,7 @@ export default function BoutiqueDashboard() {
         })}
       </div>
 
-      <div className="card-gym">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-brand-teal" />
-          <h2 className="font-display text-xl text-foreground tracking-wider">Revenus</h2>
-        </div>
-        <div className="h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <XAxis dataKey="month" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '10px', color: 'hsl(var(--foreground))' }} />
-              <Bar dataKey="revenue" fill="hsl(var(--brand-teal))" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      <BoutiqueRevenueChart data={chartData} />
 
       {lowStock.length > 0 && (
         <div className="space-y-2">

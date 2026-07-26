@@ -65,6 +65,23 @@ export class OrdersService {
         }
       }
 
+      const stockMap = new Map<string, { id: string; quantity: number }>();
+      for (const item of data.items) {
+        const stock = await tx.$queryRaw<{ id: string; quantity: number }[]>`
+          SELECT id, quantity FROM inventory_stock
+          WHERE org_id = ${orgId}::uuid AND product_id = ${item.productId}::uuid
+          FOR UPDATE
+        `;
+        if (stock.length > 0) {
+          if (stock[0].quantity < item.qty) {
+            throw new BadRequestException(
+              `Insufficient stock for product ${item.productId}. Available: ${stock[0].quantity}, requested: ${item.qty}`,
+            );
+          }
+          stockMap.set(item.productId, stock[0]);
+        }
+      }
+
       const order = await tx.order.create({
         data: {
           orgId,
@@ -85,19 +102,8 @@ export class OrdersService {
       });
 
       for (const item of data.items) {
-        const stock = await tx.$queryRaw<{ id: string; quantity: number }[]>`
-          SELECT id, quantity FROM inventory_stock
-          WHERE org_id = ${orgId}::uuid AND product_id = ${item.productId}::uuid
-          FOR UPDATE
-        `;
-
-        if (stock.length > 0) {
-          const s = stock[0];
-          if (s.quantity < item.qty) {
-            throw new BadRequestException(
-              `Insufficient stock for product ${item.productId}. Available: ${s.quantity}, requested: ${item.qty}`,
-            );
-          }
+        const s = stockMap.get(item.productId);
+        if (s) {
           await tx.inventoryStock.update({
             where: { id: s.id },
             data: { quantity: s.quantity - item.qty },

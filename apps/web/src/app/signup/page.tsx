@@ -7,6 +7,7 @@ import { BrandLogo } from '@/components/site/logo';
 import { ScrollProgress } from '@/components/site/scroll-progress';
 import { ALL_BUSINESS_TYPES } from '@/lib/constants';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default function SignupPage() {
   const { signup } = useAuth();
@@ -35,6 +36,9 @@ export default function SignupPage() {
     <main className="flex min-h-screen items-center justify-center px-4 bg-background">
       <ScrollProgress />
       <div className="w-full max-w-sm">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Retour au site
+        </Link>
         <div className="flex items-center justify-center gap-3 mb-8">
           <BrandLogo size={40} withWordmark={false} />
           <span className="font-display text-2xl font-bold tracking-wider">ORGANA</span>

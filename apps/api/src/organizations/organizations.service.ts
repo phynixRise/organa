@@ -213,6 +213,130 @@ export class OrganizationsService {
     }));
   }
 
+  async getCombinedStats(accountId: string, query: { type?: string; period?: string; orgId?: string }) {
+    const memberships = await this.prisma.membership.findMany({
+      where: { accountId },
+      include: {
+        org: {
+          select: { id: true, name: true, businessType: true, status: true, createdAt: true },
+        },
+      },
+    });
+
+    let orgIds = memberships.filter((m) => m.org.status === 'active').map((m) => m.org.id);
+
+    if (query.orgId) {
+      orgIds = orgIds.filter((id) => id === query.orgId);
+    }
+
+    if (query.type && query.type !== 'ALL') {
+      const typeMap: Record<string, string[]> = {
+        cafe: ['cafe', 'restaurant'],
+        gym: ['gym', 'fitness'],
+        boutique: ['boutique', 'tienda'],
+        hotel: ['hotel'],
+        rental_property: ['rental_property'],
+        cabinet_medical: ['cabinet_medical'],
+      };
+      const types = typeMap[query.type] || [query.type];
+      orgIds = orgIds.filter((id) => {
+        const m = memberships.find((mm) => mm.org.id === id);
+        return m && types.includes(m.org.businessType);
+      });
+    }
+
+    const now = new Date();
+    let dateFrom: Date | null = null;
+    const period = query.period || 'all';
+    if (period === 'day') {
+      dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (period === 'week') {
+      dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (period === 'month') {
+      dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (period === 'year') {
+      dateFrom = new Date(now.getFullYear(), 0, 1);
+    }
+
+    const orderWhere: any = {};
+    if (orgIds.length > 0) orderWhere.orgId = { in: orgIds };
+    if (dateFrom) orderWhere.createdAt = { gte: dateFrom };
+
+    const [orders, payments, allCustomers, perOrgOrders] = await Promise.all([
+      this.prisma.order.findMany({
+        where: orderWhere,
+        select: { id: true, orgId: true, totalMillimes: true, status: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+      }),
+      this.prisma.payment.findMany({
+        where: {
+          ...(orgIds.length > 0 ? { orgId: { in: orgIds } } : {}),
+          ...(dateFrom ? { createdAt: { gte: dateFrom } } : {}),
+        },
+        select: { id: true, orgId: true, amountMillimes: true, method: true, status: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: 500,
+      }),
+      this.prisma.customer.findMany({
+        where: orgIds.length > 0 ? { orgId: { in: orgIds } } : {},
+        select: { id: true, orgId: true, name: true, createdAt: true },
+      }),
+      this.prisma.order.groupBy({
+        by: ['orgId'],
+        where: orderWhere,
+        _sum: { totalMillimes: true },
+        _count: { id: true },
+      }),
+    ]);
+
+    const totalRevenue = orders.reduce((s, o) => s + (o.totalMillimes || 0), 0);
+    const totalPayments = payments.reduce((s, p) => s + (p.amountMillimes || 0), 0);
+    const totalOrders = orders.length;
+    const totalCustomers = allCustomers.length;
+
+    const orgStats = memberships
+      .filter((m) => m.org.status === 'active' && orgIds.includes(m.org.id))
+      .map((m) => {
+        const orgOrders = orders.filter((o) => o.orgId === m.org.id);
+        const orgPayments = payments.filter((p) => p.orgId === m.org.id);
+        const orgCustomers = allCustomers.filter((c) => c.orgId === m.org.id);
+        const grouped = perOrgOrders.find((g) => g.orgId === m.org.id);
+        return {
+          orgId: m.org.id,
+          orgName: m.org.name,
+          businessType: m.org.businessType,
+          totalRevenue: grouped?._sum?.totalMillimes || orgOrders.reduce((s, o) => s + (o.totalMillimes || 0), 0),
+          totalOrders: grouped?._count?.id || orgOrders.length,
+          totalCustomers: orgCustomers.length,
+          totalPayments: orgPayments.length,
+          recentOrders: orgOrders.slice(0, 5),
+        };
+      });
+
+    const monthlyRevenue: { month: string; revenue: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const label = d.toLocaleString('en', { month: 'short' });
+      const rev = orders
+        .filter((o) => o.createdAt >= d && o.createdAt <= monthEnd)
+        .reduce((s, o) => s + (o.totalMillimes || 0), 0);
+      monthlyRevenue.push({ month: label, revenue: rev });
+    }
+
+    return {
+      totals: { revenue: totalRevenue, payments: totalPayments, orders: totalOrders, customers: totalCustomers },
+      orgStats,
+      monthlyRevenue,
+      orgs: memberships.filter((m) => m.org.status === 'active').map((m) => ({
+        id: m.org.id,
+        name: m.org.name,
+        businessType: m.org.businessType,
+      })),
+    };
+  }
+
   async removeMember(orgId: string, accountId: string, targetAccountId: string) {
     const membership = await this.prisma.membership.findUnique({
       where: {

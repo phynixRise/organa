@@ -29,6 +29,13 @@ export class AuthController {
     return this.authService.getProfile(user.sub);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@CurrentUser() user: { sub: string }) {
+    return this.authService.logout(user.sub);
+  }
+
+  @Throttle({ default: { limit: 3, ttl: 600000 } })
   @Get('verify-email')
   verifyEmail(@Query('token') token: string) {
     if (!token) {

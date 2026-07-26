@@ -29,19 +29,26 @@ export default function CafeTables() {
   const occupiedCount = tables.filter((t) => t.status === 'occupied').length;
 
   return (
-    <div className="space-y-6">
-      <h1 className="font-display text-3xl text-foreground tracking-wider">Tables</h1>
+    <div className="cafe-theme max-w-[1440px] mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <h1 className="font-display text-3xl font-bold text-stone-800 dark:text-stone-100 tracking-tight flex items-center gap-3">
+        <Coffee className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+        Tables
+      </h1>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="card-gym text-center">
-          <Coffee className="w-5 h-5 text-[green-500] mx-auto mb-1" />
-          <div className="font-display text-2xl text-foreground">{freeCount}</div>
-          <div className="text-xs text-muted-foreground">Libres</div>
+        <div className="card-cafe text-center">
+          <div className="w-9 h-9 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-2">
+            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="font-display text-2xl font-bold text-stone-800 dark:text-stone-100">{freeCount}</div>
+          <div className="text-xs text-stone-400">Libres</div>
         </div>
-        <div className="card-gym text-center">
-          <Users className="w-5 h-5 text-[red-500] mx-auto mb-1" />
-          <div className="font-display text-2xl text-foreground">{occupiedCount}</div>
-          <div className="text-xs text-muted-foreground">Occupées</div>
+        <div className="card-cafe text-center">
+          <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-2">
+            <Clock className="w-5 h-5 text-red-500" />
+          </div>
+          <div className="font-display text-2xl font-bold text-stone-800 dark:text-stone-100">{occupiedCount}</div>
+          <div className="text-xs text-stone-400">Occupées</div>
         </div>
       </div>
 
@@ -50,16 +57,16 @@ export default function CafeTables() {
           <button key={t.id} onClick={() => toggleStatus(t.id)}
             className={`p-6 rounded-2xl border-2 transition-all text-center ${
               t.status === 'free'
-                ? 'bg-[green-500]/5 border-[green-500]/30 hover:border-[green-500]'
-                : 'bg-[red-500]/5 border-[red-500]/30 hover:border-[red-500]'
+                ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/50 hover:border-green-400'
+                : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/50 hover:border-red-400'
             }`}>
             <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${
-              t.status === 'free' ? 'bg-[green-500]/10' : 'bg-[red-500]/10'
+              t.status === 'free' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
             }`}>
-              {t.status === 'free' ? <CheckCircle className="w-6 h-6 text-[green-500]" /> : <Clock className="w-6 h-6 text-[red-500]" />}
+              {t.status === 'free' ? <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" /> : <Clock className="w-6 h-6 text-red-500" />}
             </div>
-            <div className="font-display text-xl text-foreground tracking-wider mb-1">{t.name}</div>
-            <div className={`text-xs font-medium ${t.status === 'free' ? 'text-[green-500]' : 'text-[red-500]'}`}>
+            <div className="font-display text-xl font-bold text-stone-800 dark:text-stone-100 tracking-tight mb-1">{t.name}</div>
+            <div className={`text-xs font-medium ${t.status === 'free' ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
               {t.status === 'free' ? 'Libre' : 'Occupée'}
             </div>
           </button>

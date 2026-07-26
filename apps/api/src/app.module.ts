@@ -19,6 +19,7 @@ import { EventsModule } from './events/events.module';
 import { OrgFeaturesModule } from './org-features/org-features.module';
 import { SuperAdminModule } from './super-admin/super-admin.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { GymModule } from './gym/gym.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { InventoryModule } from './inventory/inventory.module';
     OrgFeaturesModule,
     SuperAdminModule,
     InventoryModule,
+    GymModule,
   ],
   controllers: [AppController],
   providers: [

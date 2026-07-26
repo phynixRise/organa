@@ -7,8 +7,8 @@ import { useOrg } from '@/contexts/org-context';
 import Link from 'next/link';
 import {
   LayoutDashboard, Coffee, Users, Package, Settings,
-  LogOut, ChevronLeft, ChevronRight, Menu, X, ChevronDown,
-  UtensilsCrossed, Grid3X3, BarChart3, ClipboardList, Home
+  LogOut, Menu, X, ChevronDown,
+  UtensilsCrossed, Grid3X3, ClipboardList, Home, Store
 } from 'lucide-react';
 
 function OrgSwitcherCafe() {
@@ -28,31 +28,28 @@ function OrgSwitcherCafe() {
 
   return (
     <div className="relative" ref={ref}>
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-2 px-3 py-1.5 bg-muted border border-border rounded-lg hover:bg-muted/80 text-sm transition">
-        <Coffee className="w-4 h-4 text-green-500" />
-        <span className="text-foreground font-medium">{selectedOrg.name}</span>
-        <ChevronDown className="w-4 h-4 text-muted-foreground" />
+      <button onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3 py-1.5 bg-white/80 dark:bg-stone-800/80 border border-amber-200 dark:border-amber-900/50 rounded-full hover:bg-amber-50 dark:hover:bg-stone-700 text-sm transition">
+        <Store className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+        <span className="text-stone-800 dark:text-stone-100 font-medium">{selectedOrg.name}</span>
+        <ChevronDown className="w-4 h-4 text-stone-400" />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-xl shadow-2xl z-50 py-1">
-          <div className="px-3 py-2 text-xs text-muted-foreground uppercase tracking-wide">Mes entreprises</div>
-          {orgs.map((org) => {
-            const isCafe = ['cafe', 'restaurant'].includes(org.businessType);
-            const isGym = ['gym', 'fitness', 'salle_de_sport'].includes(org.businessType);
-            return (
-              <button key={org.id} onClick={() => { selectOrg(org); setOpen(false); }}
-                className={`w-full text-left px-3 py-2 flex items-center gap-3 text-sm hover:bg-muted transition ${org.id === selectedOrg.id ? 'bg-green-500/10' : ''}`}>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCafe ? 'bg-green-500/10' : isGym ? 'bg-orange-500/10' : 'bg-blue-500/10'}`}>
-                  {isCafe ? <Coffee className="w-4 h-4 text-green-500" /> : isGym ? <LayoutDashboard className="w-4 h-4 text-orange-500" /> : <LayoutDashboard className="w-4 h-4 text-blue-500" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-foreground font-medium truncate">{org.name}</div>
-                  <div className="text-xs text-muted-foreground">{org.businessType}</div>
-                </div>
-                {org.id === selectedOrg.id && <span className="text-green-500">✓</span>}
-              </button>
-            );
-          })}
+        <div className="absolute top-full left-0 mt-2 w-72 bg-white dark:bg-stone-800 border border-amber-200 dark:border-amber-900/50 rounded-2xl shadow-xl z-50 py-2">
+          <div className="px-4 py-2 text-xs text-stone-400 uppercase tracking-wider font-medium">Mes cafés</div>
+          {orgs.map((org) => (
+            <button key={org.id} onClick={() => { selectOrg(org); setOpen(false); }}
+              className={`w-full text-left px-4 py-2.5 flex items-center gap-3 text-sm hover:bg-amber-50 dark:hover:bg-stone-700 transition ${org.id === selectedOrg.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
+              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Coffee className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-stone-800 dark:text-stone-100 font-medium truncate">{org.name}</div>
+                <div className="text-xs text-stone-400">{org.businessType}</div>
+              </div>
+              {org.id === selectedOrg.id && <span className="text-amber-600 dark:text-amber-400">✓</span>}
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -75,7 +72,6 @@ export default function CafeLayout({ children }: { children: React.ReactNode }) 
   const { selectedOrg, loading: orgLoading } = useOrg();
   const router = useRouter();
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -84,84 +80,105 @@ export default function CafeLayout({ children }: { children: React.ReactNode }) 
 
   if (authLoading || orgLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="text-muted-foreground font-body">Chargement...</div>
+      <div className="flex items-center justify-center min-h-screen" style={{ background: '#FAF5F0' }}>
+        <div className="text-stone-400">Chargement...</div>
       </div>
     );
   }
 
   if (!account) return null;
 
-  const SidebarContent = () => (
-    <>
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-border">
-        <div className="w-10 h-10 bg-[#22C55E] rounded-xl flex items-center justify-center">
-          <Coffee className="w-5 h-5 text-white" />
+  return (
+    <div className="cafe-theme min-h-screen flex flex-col">
+      {/* ── Top Navigation Bar ── */}
+      <header className="cafe-topbar sticky top-0 z-40">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center h-16 gap-6">
+            {/* Logo */}
+            <Link href="/cafe/dashboard" className="flex items-center gap-2.5 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center shadow-md">
+                <Coffee className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-display text-lg font-bold text-stone-800 dark:text-stone-100 tracking-tight hidden sm:block">
+                {selectedOrg?.name || 'Mon Café'}
+              </span>
+            </Link>
+
+            <Link href="/" className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors">
+              <Home className="w-4 h-4" /> <span className="hidden sm:inline">Accueil</span>
+            </Link>
+
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-1">
+              {CAFE_NAV.map((item) => {
+                const active = pathname === item.href || (item.href !== '/cafe/dashboard' && pathname.startsWith(item.href));
+                const Icon = item.icon;
+                return (
+                  <Link key={item.href} href={item.href}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                      active
+                        ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
+                        : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
+                    }`}>
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden lg:inline">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="flex-1" />
+
+            {/* Right side */}
+            <OrgSwitcherCafe />
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="text-sm text-stone-500 dark:text-stone-400">{account.fullName || account.email}</div>
+              <button onClick={logout} className="p-2 text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition">
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Mobile menu button */}
+            <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 text-stone-400">
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-        {!collapsed && (
-          <div>
-            <div className="font-display text-xl text-foreground tracking-wider">{selectedOrg?.name || 'CAFÉ'}</div>
-            <div className="text-xs text-muted-foreground">{selectedOrg?.businessType}</div>
+
+        {/* Mobile Nav */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-amber-200 dark:border-amber-900/50 bg-white dark:bg-stone-800 px-4 py-3 space-y-1">
+            {CAFE_NAV.map((item) => {
+              const active = pathname === item.href || (item.href !== '/cafe/dashboard' && pathname.startsWith(item.href));
+              const Icon = item.icon;
+              return (
+                <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    active ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300' : 'text-stone-500 dark:text-stone-400'
+                  }`}>
+                  <Icon className="w-5 h-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+            <div className="pt-2 mt-2 border-t border-amber-200 dark:border-amber-900/50">
+              <button onClick={logout} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition">
+                <LogOut className="w-5 h-5" /> Déconnexion
+              </button>
+            </div>
           </div>
         )}
-      </div>
+      </header>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {CAFE_NAV.map((item) => {
-          const active = pathname === item.href || (item.href !== '/cafe/dashboard' && pathname.startsWith(item.href));
-          const Icon = item.icon;
-          return (
-            <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                active ? 'bg-green-500/10 text-green-500 border-l-2 border-[#22C55E]' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}>
-              <Icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
-        })}
-      </nav>
+      {/* ── Page Content ── */}
+      <main className="flex-1">
+        {children}
+      </main>
 
-      <div className="px-3 py-4 border-t border-border">
-        {!collapsed && <div className="text-xs text-muted-foreground px-3 mb-2 truncate">{account.email}</div>}
-        <button onClick={logout} className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg transition">
-          <LogOut className="w-5 h-5 shrink-0" />
-          {!collapsed && <span>Déconnexion</span>}
-        </button>
-      </div>
-    </>
-  );
-
-  return (
-    <div className="flex min-h-screen bg-background">
-      <aside className={`hidden lg:flex flex-col ${collapsed ? 'w-[72px]' : 'w-[240px]'} bg-card border-r border-border transition-all duration-200`}>
-        <SidebarContent />
-        <button onClick={() => setCollapsed(!collapsed)} className="p-3 border-t border-border text-muted-foreground hover:text-foreground hover:bg-muted transition">
-          {collapsed ? <ChevronRight className="w-5 h-5 mx-auto" /> : <ChevronLeft className="w-5 h-5 mx-auto" />}
-        </button>
-      </aside>
-
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-[240px] bg-card border-r border-border flex flex-col">
-            <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 text-muted-foreground"><X className="w-5 h-5" /></button>
-            <SidebarContent />
-          </aside>
-        </div>
-      )}
-
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-card border-b border-border px-4 py-3 flex items-center gap-4">
-          <button onClick={() => setMobileOpen(true)} className="lg:hidden text-muted-foreground"><Menu className="w-5 h-5" /></button>
-          <Link href="/" className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition">
-            <Home className="w-4 h-4" /> Accueil
-          </Link>
-          <div className="flex-1"><OrgSwitcherCafe /></div>
-          <div className="text-sm text-muted-foreground">{account.fullName || account.email}</div>
-        </header>
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
-      </div>
+      {/* ── Footer ── */}
+      <footer className="border-t border-amber-200/50 dark:border-stone-800 py-4 px-6 text-center text-xs text-stone-400">
+        <span className="opacity-60">☕</span> {selectedOrg?.name || 'Mon Café'} — Organa
+      </footer>
     </div>
   );
 }

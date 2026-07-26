@@ -3,9 +3,11 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
@@ -14,14 +16,23 @@ import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { randomBytes } from 'crypto';
 
+const FAILED_LOGIN_PREFIX = 'failed_login:';
+const LOCKOUT_PREFIX = 'lockout:';
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 900; // 15 minutes
+
 @Injectable()
 export class AuthService {
+  private redis: Redis;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
     private emailService: EmailService,
-  ) {}
+  ) {
+    this.redis = new Redis(this.configService.get<string>('REDIS_URL', 'redis://localhost:6379'));
+  }
 
   async signup(dto: SignupDto) {
     const normalizedEmail = dto.email.toLowerCase().trim();
@@ -89,7 +100,7 @@ export class AuthService {
       return { account, org };
     });
 
-    const token = this.generateToken(result.account);
+    const token = this.generateToken({ ...result.account, tokenVersion: 0 });
 
     const verifyToken = randomBytes(32).toString('hex');
     const verifyTokenPrefix = verifyToken.slice(0, 8);
@@ -129,6 +140,12 @@ export class AuthService {
   async login(dto: LoginDto) {
     const normalizedEmail = dto.email.toLowerCase().trim();
 
+    const lockKey = `${LOCKOUT_PREFIX}${normalizedEmail}`;
+    const isLocked = await this.redis.get(lockKey);
+    if (isLocked) {
+      throw new ForbiddenException('Account temporarily locked due to too many failed attempts. Try again in 15 minutes.');
+    }
+
     const account = await this.prisma.account.findFirst({
       where: { email: normalizedEmail },
     });
@@ -139,8 +156,20 @@ export class AuthService {
 
     const passwordValid = await bcrypt.compare(dto.password, account.passwordHash);
     if (!passwordValid) {
+      const failKey = `${FAILED_LOGIN_PREFIX}${normalizedEmail}`;
+      const attempts = await this.redis.incr(failKey);
+      await this.redis.expire(failKey, LOCKOUT_DURATION);
+
+      if (attempts >= MAX_FAILED_ATTEMPTS) {
+        await this.redis.set(lockKey, '1', 'EX', LOCKOUT_DURATION);
+        await this.redis.del(failKey);
+        throw new ForbiddenException('Account temporarily locked due to too many failed attempts. Try again in 15 minutes.');
+      }
+
       throw new UnauthorizedException('Invalid email or password');
     }
+
+    await this.redis.del(`${FAILED_LOGIN_PREFIX}${normalizedEmail}`);
 
     const token = this.generateToken(account);
 
@@ -171,6 +200,20 @@ export class AuthService {
     }
 
     return account;
+  }
+
+  async logout(accountId: string) {
+    const account = await this.prisma.account.findUnique({ where: { id: accountId } });
+    if (!account) {
+      throw new UnauthorizedException('Account not found');
+    }
+
+    await this.prisma.account.update({
+      where: { id: accountId },
+      data: { tokenVersion: { increment: 1 } },
+    });
+
+    return { message: 'Logged out successfully' };
   }
 
   async requestPasswordReset(email: string) {
@@ -290,10 +333,11 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
-  private generateToken(account: { id: string; email: string }): string {
+  private generateToken(account: { id: string; email: string; tokenVersion?: number }): string {
     return this.jwtService.sign({
       sub: account.id,
       email: account.email,
+      tokenVersion: account.tokenVersion ?? 0,
     });
   }
 }

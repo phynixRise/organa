@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto, UpdateOrganizationDto, InviteMemberDto } from './dto/organization.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -17,6 +17,16 @@ export class OrganizationsController {
   @Get()
   findAll(@CurrentUser() user: { sub: string }) {
     return this.orgService.findAllForAccount(user.sub);
+  }
+
+  @Get('combined-stats')
+  getCombinedStats(
+    @CurrentUser() user: { sub: string },
+    @Query('type') type?: string,
+    @Query('period') period?: string,
+    @Query('orgId') orgId?: string,
+  ) {
+    return this.orgService.getCombinedStats(user.sub, { type, period, orgId });
   }
 
   @Get(':id')

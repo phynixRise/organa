@@ -14,6 +14,7 @@ model Account {
   phone          String?
   passwordHash   String          @map("password_hash")
   fullName       String?         @map("full_name")
+  tokenVersion   Int             @default(0) @map("token_version")
   createdAt      DateTime        @default(now()) @db.Timestamptz() @map("created_at")
   authTokens     AuthToken[]
   memberships    Membership[]
@@ -70,7 +71,9 @@ model Organization {
   payments        Payment[]
   appointments    Appointment[]
   inventoryStock  InventoryStock[]
+  gymPlans        GymPlan[]
   gymMemberships  GymMembership[]
+  gymClasses      GymClass[]
   medicalRecords  MedicalRecord[]
   orgFeatures     OrgFeature[]
   events          Event[]
@@ -165,6 +168,7 @@ model Customer {
   orders          Order[]
   appointments    Appointment[]
   gymMemberships  GymMembership[]
+  gymClassBookings GymClassBooking[]
   medicalPatients MedicalRecord[]
 
   @@index([orgId])
@@ -236,6 +240,7 @@ model Order {
   payments       Payment[]
 
   @@index([orgId])
+  @@index([orgId, createdAt])
   @@map("orders")
 }
 
@@ -287,6 +292,7 @@ model Appointment {
   createdAt      DateTime     @default(now()) @db.Timestamptz() @map("created_at")
 
   @@index([orgId])
+  @@index([orgId, startTime])
   @@map("appointments")
 }
 
@@ -305,6 +311,21 @@ model InventoryStock {
   @@map("inventory_stock")
 }
 
+model GymPlan {
+  id            String       @id @default(uuid()) @db.Uuid
+  orgId         String       @map("orgId") @db.Uuid
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name          String
+  durationDays  Int          @default(30) @map("durationDays")
+  priceMillimes Int          @default(0) @map("priceMillimes")
+  isActive      Boolean      @default(true) @map("isActive")
+  sortOrder     Int          @default(0) @map("sortOrder")
+  createdAt     DateTime     @default(now()) @db.Timestamptz() @map("created_at")
+
+  @@index([orgId])
+  @@map("gym_plans")
+}
+
 model GymMembership {
   id         String       @id @default(uuid()) @db.Uuid
   orgId      String       @map("org_id") @db.Uuid
@@ -312,11 +333,47 @@ model GymMembership {
   customerId String       @map("customer_id") @db.Uuid
   customer   Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
   planName   String       @map("plan_name")
+  status     String       @default("active")
   startDate  DateTime     @db.Date @map("start_date")
   endDate    DateTime     @db.Date @map("end_date")
 
   @@index([orgId])
+  @@index([orgId, endDate])
   @@map("gym_memberships")
+}
+
+model GymClass {
+  id           String               @id @default(uuid()) @db.Uuid
+  orgId        String               @map("org_id") @db.Uuid
+  org          Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  instructor   String?
+  capacity     Int                  @default(20)
+  durationMins Int                  @default(60) @map("duration_mins")
+  startTime    DateTime             @map("start_time") @db.Timestamptz()
+  recurrence   String?
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @db.Timestamptz() @map("created_at")
+  bookings     GymClassBooking[]
+
+  @@index([orgId])
+  @@index([orgId, startTime])
+  @@map("gym_classes")
+}
+
+model GymClassBooking {
+  id        String    @id @default(uuid()) @db.Uuid
+  classId   String    @map("class_id") @db.Uuid
+  class     GymClass  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  customerId String   @map("customer_id") @db.Uuid
+  customer  Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  status    String    @default("booked")
+  createdAt DateTime  @default(now()) @db.Timestamptz() @map("created_at")
+
+  @@unique([classId, customerId])
+  @@index([classId])
+  @@map("gym_class_bookings")
 }
 
 model MedicalRecord {

@@ -13,6 +13,7 @@ interface Account {
 interface AuthState {
   token: string | null;
   account: Account | null;
+  user: Account | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (data: { email: string; password: string; fullName: string; businessName: string; businessType: string }) => Promise<void>;
@@ -91,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ token, account, loading, login, signup, logout, refreshAfterAuth }}>
+    <AuthContext.Provider value={{ token, account, user: account, loading, login, signup, logout, refreshAfterAuth }}>
       {children}
     </AuthContext.Provider>
   );
