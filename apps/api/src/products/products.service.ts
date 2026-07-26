@@ -46,15 +46,28 @@ export class ProductsService {
     barcode?: string;
     attributes?: any;
   }) {
-    return this.prisma.productService.create({
-      data: {
-        orgId,
-        name: data.name,
-        type: data.type,
-        priceMillimes: data.priceMillimes,
-        barcode: data.barcode,
-        attributes: data.attributes ?? {},
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const product = await tx.productService.create({
+        data: {
+          orgId,
+          name: data.name,
+          type: data.type,
+          priceMillimes: data.priceMillimes,
+          barcode: data.barcode,
+          attributes: data.attributes ?? {},
+        },
+      });
+
+      await tx.inventoryStock.create({
+        data: {
+          orgId,
+          productId: product.id,
+          quantity: 0,
+          reorderLevel: 0,
+        },
+      });
+
+      return product;
     });
   }
 

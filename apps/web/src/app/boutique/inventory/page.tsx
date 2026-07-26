@@ -5,7 +5,7 @@ import { useOrg } from '@/contexts/org-context';
 import { api } from '@/lib/api';
 import { Package, AlertTriangle, Plus, Minus } from 'lucide-react';
 
-interface Product { id: string; name: string; stockQuantity: number | null; priceMillimes: number; sku: string | null; }
+interface Product { id: string; name: string; stockQuantity: number | null; priceMillimes: number; sku: string | null; reorderLevel: number | null; }
 
 export default function BoutiqueInventory() {
   const { selectedOrg } = useOrg();
@@ -30,8 +30,8 @@ export default function BoutiqueInventory() {
     } catch {}
   }
 
-  const lowStock = products.filter((p) => p.stockQuantity !== null && p.stockQuantity !== undefined && p.stockQuantity <= 5);
-  const inStock = products.filter((p) => p.stockQuantity !== null && p.stockQuantity !== undefined && p.stockQuantity > 5);
+  const lowStock = products.filter((p) => p.stockQuantity !== null && p.stockQuantity !== undefined && p.reorderLevel !== null && p.reorderLevel > 0 && p.stockQuantity <= p.reorderLevel);
+  const inStock = products.filter((p) => p.stockQuantity !== null && p.stockQuantity !== undefined && (p.reorderLevel === null || p.reorderLevel === 0 || p.stockQuantity > p.reorderLevel));
 
   if (!selectedOrg) return <div className="text-center py-12 text-muted-foreground">Sélectionnez une entreprise</div>;
 
@@ -80,7 +80,7 @@ export default function BoutiqueInventory() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={`font-mono text-sm ${p.stockQuantity !== null && p.stockQuantity <= 5 ? 'text-[#EAB308]' : 'text-[#22C55E]'}`}>
+                    <span className={`font-mono text-sm ${p.stockQuantity !== null && p.reorderLevel !== null && p.reorderLevel > 0 && p.stockQuantity <= p.reorderLevel ? 'text-[#EAB308]' : 'text-[#22C55E]'}`}>
                       {p.stockQuantity ?? '—'}
                     </span>
                     <div className="flex gap-1">

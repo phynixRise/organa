@@ -65,20 +65,22 @@ export class OrdersService {
         }
       }
 
-      const stockMap = new Map<string, { id: string; quantity: number }>();
       for (const item of data.items) {
-        const stock = await tx.$queryRaw<{ id: string; quantity: number }[]>`
-          SELECT id, quantity FROM inventory_stock
-          WHERE org_id = ${orgId}::uuid AND product_id = ${item.productId}::uuid
-          FOR UPDATE
-        `;
-        if (stock.length > 0) {
-          if (stock[0].quantity < item.qty) {
-            throw new BadRequestException(
-              `Insufficient stock for product ${item.productId}. Available: ${stock[0].quantity}, requested: ${item.qty}`,
-            );
-          }
-          stockMap.set(item.productId, stock[0]);
+        const result = await tx.$executeRawUnsafe(
+          `UPDATE inventory_stock
+           SET quantity = quantity - $1, updated_at = now()
+           WHERE org_id = $2::uuid AND product_id = $3::uuid AND quantity >= $1`,
+          item.qty, orgId, item.productId,
+        );
+        if (result === 0) {
+          const stock = await tx.$queryRaw<{ quantity: number }[]>`
+            SELECT quantity FROM inventory_stock
+            WHERE org_id = ${orgId}::uuid AND product_id = ${item.productId}::uuid
+          `;
+          const available = stock.length > 0 ? stock[0].quantity : 0;
+          throw new BadRequestException(
+            `Insufficient stock for product ${item.productId}. Available: ${available}, requested: ${item.qty}`,
+          );
         }
       }
 
@@ -100,16 +102,6 @@ export class OrdersService {
         },
         include: { items: true },
       });
-
-      for (const item of data.items) {
-        const s = stockMap.get(item.productId);
-        if (s) {
-          await tx.inventoryStock.update({
-            where: { id: s.id },
-            data: { quantity: s.quantity - item.qty },
-          });
-        }
-      }
 
       await tx.event.create({
         data: {
